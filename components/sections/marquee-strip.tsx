@@ -1,6 +1,5 @@
 "use client";
 
-import { MARQUEE } from "@/lib/content";
 import Marquee from "@/components/effects/marquee";
 
 /**
@@ -8,7 +7,7 @@ import Marquee from "@/components/effects/marquee";
  * size that reads as a graphic rather than a sentence. Direction follows the
  * scroll, so reversing up the page reverses the strip.
  */
-export default function MarqueeStrip({ invert = false }: { invert?: boolean }) {
+export default function MarqueeStrip({ phrases, invert = false }: { phrases: string[]; invert?: boolean }) {
   return (
     <div
       data-surface={invert ? undefined : "ink"}
@@ -17,7 +16,7 @@ export default function MarqueeStrip({ invert = false }: { invert?: boolean }) {
       }`}
     >
       <Marquee speed={64}>
-        {MARQUEE.map((phrase, index) => (
+        {phrases.map((phrase, index) => (
           <span
             key={`${phrase}-${index}`}
             className="display flex shrink-0 items-center gap-[0.6em] px-[0.35em] text-[clamp(28px,4.4vw,72px)] whitespace-nowrap"

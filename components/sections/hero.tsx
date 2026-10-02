@@ -3,8 +3,7 @@
 import { useCallback, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 
-import { HERO, SITE } from "@/lib/content";
-import { SHOWREEL } from "@/lib/reels";
+import type { ContentDocs } from "@/lib/cms/schema";
 import { gsap } from "@/lib/gsap";
 import { useLoaded } from "@/components/loader";
 import ProgressiveBlur from "@/components/effects/progressive-blur";
@@ -22,7 +21,18 @@ import SpiralGallery from "@/components/effects/spiral-gallery";
  * There is no large headline here on purpose:
  * neither reference has one, so the page's h1 is the statement itself.
  */
-export default function Hero() {
+export default function Hero({
+  eyebrow,
+  lede,
+  tagline,
+  clips,
+}: {
+  eyebrow: string;
+  lede: ContentDocs["hero"]["lede"];
+  tagline: string;
+  /** The showreel, the spiral's cards. */
+  clips: ContentDocs["showreel"];
+}) {
   const root = useRef<HTMLElement>(null);
   const loaded = useLoaded();
 
@@ -67,7 +77,7 @@ export default function Hero() {
   return (
     <section ref={root} data-hero className="gradient-paper text-ink relative">
       <SpiralGallery
-        clips={SHOWREEL}
+        clips={clips}
         soundRef={soundRef}
         onProgress={(p) => {
           // The corner furniture belongs to the pinned screen. Take it out in
@@ -140,7 +150,7 @@ export default function Hero() {
           (351px at 15px) wrapped at 390 too; two extra lines put the top of
           the block into the front card of the helix on a 667px screen.
         */}
-        <p className="label mb-[0.75em] block text-[clamp(14px,1.05vw,19px)] max-mobile:text-[13px]">{HERO.eyebrow}</p>
+        <p className="label mb-[0.75em] block text-[clamp(14px,1.05vw,19px)] max-mobile:text-[13px]">{eyebrow}</p>
 
         {/*
           The page's one h1 is the claim alone. The block used to be the h1 as
@@ -152,13 +162,13 @@ export default function Hero() {
         <h1 className="statement block text-[clamp(32px,3.8vw,56px)]">
           <span className="sr-only">Social Yatri, social media marketing agency in Kolkata. </span>
           {/* The space reads as one before the break and is never drawn. */}
-          {HERO.lede[0]}{" "}
+          {lede[0]}{" "}
           <br />
-          {HERO.lede[1]}
+          {lede[1]}
         </h1>
 
         <p className="label mt-[0.7em] block text-[clamp(15px,1.15vw,21px)] opacity-70 max-mobile:text-[14px]" lang="hi-Latn">
-          {SITE.tagline}
+          {tagline}
         </p>
       </div>
 

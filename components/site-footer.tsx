@@ -4,7 +4,8 @@ import { useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useGSAP } from "@gsap/react";
 
-import { CONNECT, DIRECT, NAV, SITE } from "@/lib/content";
+import type { DirectRow } from "@/lib/cms/derive";
+import type { NavDoc, SiteDoc } from "@/lib/cms/schema";
 import TransitionLink from "@/components/transition/transition-link";
 import Reveal from "@/components/effects/reveal";
 import { ArrowUpRightIcon, Icon } from "@/components/ui/icons";
@@ -23,8 +24,21 @@ import { ArrowUpRightIcon, Icon } from "@/components/ui/icons";
  * join the column in flow, the row first and the wordmark last against the
  * footer's bottom edge, which is where the clip then falls. In flow they can
  * never be climbed into by the contact column on a short screen either.
+ *
+ * Everything it prints is content, handed down by the site shell already cut
+ * to the fields used here.
  */
-export default function SiteFooter() {
+export default function SiteFooter({
+  nav,
+  direct,
+  site,
+  connect,
+}: {
+  nav: NavDoc;
+  direct: DirectRow[];
+  site: Pick<SiteDoc, "name" | "tagline" | "email" | "city" | "copyright" | "madeIn">;
+  connect: { question: string; submit: string };
+}) {
   const mark = useRef<HTMLSpanElement>(null);
   // On the contact page the question is already the h1 above the form, so the
   // footer closes with the tagline and drops the pill that leads back here.
@@ -71,7 +85,7 @@ export default function SiteFooter() {
             // On /contact this is the tagline, which is Hindi in Latin letters.
             lang={onContact ? "hi-Latn" : undefined}
           >
-            {onContact ? SITE.tagline : CONNECT.question}
+            {onContact ? site.tagline : connect.question}
           </Reveal>
 
           {/*
@@ -85,18 +99,18 @@ export default function SiteFooter() {
               splitLines={false}
               className="statement text-accent mt-[0.6em] text-[clamp(20px,2.4vw,34px)]"
             >
-              <span lang="hi-Latn">{SITE.tagline}</span>
+              <span lang="hi-Latn">{site.tagline}</span>
             </Reveal>
           )}
 
           <div className="mt-[28px] flex flex-wrap gap-[10px]">
             {onContact ? null : (
               <TransitionLink href="/contact" className="pill">
-                <span>{CONNECT.submit.replace(" →", "")}</span>
+                <span>{connect.submit.replace(" →", "")}</span>
                 <span aria-hidden>→</span>
               </TransitionLink>
             )}
-            <a href={`mailto:${SITE.email}`} className="pill">
+            <a href={`mailto:${site.email}`} className="pill">
               <span>Drop us an email</span>
               <span aria-hidden>@</span>
             </a>
@@ -113,7 +127,7 @@ export default function SiteFooter() {
           the number can be read off the footer without a click.
         */}
         <ul className="mr-[8vw] flex flex-col gap-[0.75em] max-tablet:mr-0">
-          {DIRECT.map((entry) => {
+          {direct.map((entry) => {
             const external = entry.href?.startsWith("http") ?? false;
             return (
               <li key={entry.label}>
@@ -162,7 +176,7 @@ export default function SiteFooter() {
           ref={mark}
           className="display absolute top-0 left-0 block leading-[0.78] whitespace-nowrap uppercase max-mobile:static"
         >
-          {SITE.name}
+          {site.name}
         </span>
       </div>
 
@@ -174,18 +188,18 @@ export default function SiteFooter() {
           in the marquee.
         */}
         <span>
-          {SITE.copyright}
-          <span className="max-mobile:hidden"> · {SITE.madeIn}</span>
+          {site.copyright}
+          <span className="max-mobile:hidden"> · {site.madeIn}</span>
         </span>
         <nav aria-label="Footer" className="flex gap-[1.25em] max-tablet:hidden">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <TransitionLink key={item.href} href={item.href} className="opacity-70 transition-[opacity,color] duration-300 hover:text-accent hover:opacity-100">
               {item.label}
             </TransitionLink>
           ))}
         </nav>
         <span className="flex items-center gap-[1em]">
-          <span className="max-mobile:hidden">{SITE.city}</span>
+          <span className="max-mobile:hidden">{site.city}</span>
           <span className="bg-accent text-ink rounded-[3px] px-[6px] py-[2px] text-[11px] font-medium">EN</span>
         </span>
       </div>

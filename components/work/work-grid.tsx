@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 
-import { WORKS, workCover } from "@/lib/content";
+import type { wallCards } from "@/lib/cms/derive";
 import { gsap } from "@/lib/gsap";
 import { useLoaded } from "@/components/loader";
 import { useTransition } from "@/components/transition/transition-provider";
@@ -18,7 +18,7 @@ import WorkCard from "./work-card";
  * existed at the time. The categories are that grouping now, so a filter over
  * them would be a control that sorts categories by category.
  */
-export default function WorkGrid() {
+export default function WorkGrid({ cards }: { cards: ReturnType<typeof wallCards> }) {
   const grid = useRef<HTMLDivElement>(null);
   const loaded = useLoaded();
   const { isBusy } = useTransition();
@@ -48,8 +48,8 @@ export default function WorkGrid() {
       ref={grid}
       className="grid grid-cols-3 gap-x-[1.5em] gap-y-[3.5em] max-tablet:grid-cols-2 max-mobile:grid-cols-1"
     >
-      {WORKS.map((work, index) => {
-        const cover = workCover(work);
+      {cards.map((work, index) => {
+        const { cover } = work;
         return (
           <TransitionLink
             key={work.slug}

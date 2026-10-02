@@ -3,7 +3,7 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 
-import { PROCESS } from "@/lib/content";
+import type { ContentDocs } from "@/lib/cms/schema";
 import { gsap } from "@/lib/gsap";
 import HowrahBridge from "@/components/effects/howrah-bridge";
 import Reveal from "@/components/effects/reveal";
@@ -22,7 +22,7 @@ import SectionHead from "@/components/ui/section-head";
  * carries `data-bridge-scene`, which is what the drawing scrolls against, so
  * the flight is paced by the eight stages rather than by its own height.
  */
-export default function RouteSteps() {
+export default function RouteSteps({ stages }: { stages: ContentDocs["process"] }) {
   const root = useRef<HTMLDivElement>(null);
 
   useGSAP(
@@ -54,9 +54,9 @@ export default function RouteSteps() {
       className="text-ink relative px-[var(--gutter)] py-[7em]"
     >
       <SectionHead
-        marker={PROCESS.sign}
-        title={PROCESS.question}
-        sub={PROCESS.sub}
+        marker={stages.sign}
+        title={stages.question}
+        sub={stages.sub}
         className="mb-[4em]"
       />
 
@@ -69,7 +69,7 @@ export default function RouteSteps() {
         </div>
 
         <ol className="relative">
-          {PROCESS.steps.map((step) => (
+          {stages.steps.map((step) => (
             <li
               key={step.no}
               data-route-step

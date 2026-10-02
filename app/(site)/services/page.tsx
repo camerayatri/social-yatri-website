@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 
-import { SERVICES, SERVICES_INTRO, WHY, serviceId } from "@/lib/content";
+import { getContent } from "@/lib/cms/get-content";
+import { serviceId } from "@/lib/cms/derive";
 import { StickyTab, StickyTabGroup } from "@/components/effects/sticky-tabs";
 import SectionHead from "@/components/ui/section-head";
 import Reveal from "@/components/effects/reveal";
@@ -21,15 +22,16 @@ export const metadata: Metadata = {
   alternates: { canonical: "/services" },
 };
 
-export default function ServicesPage() {
+export default async function ServicesPage() {
+  const { services, servicesIntro, why, marquee } = await getContent();
   return (
     <main>
-      <JsonLd data={servicesList()} />
+      <JsonLd data={servicesList(services)} />
       <section className="text-ink px-[var(--gutter)] pt-[calc(var(--corner)+96px)] pb-[3em]">
         <SectionHead
-          marker={SERVICES_INTRO.sign}
-          title={SERVICES_INTRO.question}
-          sub={SERVICES_INTRO.sub}
+          marker={servicesIntro.sign}
+          title={servicesIntro.question}
+          sub={servicesIntro.sub}
           titleAs="h1"
           size="xl"
         />
@@ -37,7 +39,7 @@ export default function ServicesPage() {
         <div className="mt-[3em] grid grid-cols-[42%_1fr] gap-[4vw] max-tablet:grid-cols-1">
           <div />
           <div className="max-w-[34em]">
-            {SERVICES_INTRO.body.map((paragraph) => (
+            {servicesIntro.body.map((paragraph) => (
               <Reveal key={paragraph} as="p" className="mt-[1em] text-[1.0625em] opacity-70">
                 {paragraph}
               </Reveal>
@@ -55,7 +57,7 @@ export default function ServicesPage() {
         keeps one grid.
       */}
       <StickyTabGroup>
-        {SERVICES.map((service) => {
+        {services.map((service) => {
           return (
             <StickyTab
               key={service.no}
@@ -133,7 +135,7 @@ export default function ServicesPage() {
         data-surface="ink"
         className="surface-ink text-paper px-[var(--gutter)] py-[7em]"
       >
-        <SectionHead marker={WHY.sign} title={WHY.question} className="mb-[3em]" />
+        <SectionHead marker={why.sign} title={why.question} className="mb-[3em]" />
 
         <div className="grid grid-cols-[42%_1fr] gap-[4vw] max-tablet:grid-cols-1 max-tablet:gap-[2em]">
           {/*
@@ -142,7 +144,7 @@ export default function ServicesPage() {
             carried in the brand colour because it is the one that answers them.
           */}
           <div>
-            {WHY.list.map((line) => (
+            {why.list.map((line) => (
               <Reveal
                 key={line}
                 as="p"
@@ -155,12 +157,12 @@ export default function ServicesPage() {
               as="p"
               className="rule statement text-accent border-t py-[0.9em] text-[1.5em]"
             >
-              {WHY.turn}
+              {why.turn}
             </Reveal>
           </div>
 
           <div className="max-w-[34em]">
-            {WHY.body.map((paragraph) => (
+            {why.body.map((paragraph) => (
               <Reveal key={paragraph} as="p" className="mt-[1em] text-[1.0625em] opacity-70">
                 {paragraph}
               </Reveal>
@@ -170,16 +172,16 @@ export default function ServicesPage() {
               as="p"
               className="display mt-[2em] max-w-[10em] text-[clamp(24px,2.8vw,44px)]"
             >
-              {WHY.ask}
+              {why.ask}
             </Reveal>
             <Reveal as="p" className="mt-[1em] text-[1.0625em] opacity-70">
-              {WHY.close}
+              {why.close}
             </Reveal>
           </div>
         </div>
       </section>
 
-      <MarqueeStrip />
+      <MarqueeStrip phrases={marquee} />
     </main>
   );
 }
