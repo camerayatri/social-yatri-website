@@ -8,6 +8,7 @@ import SectionHead from "@/components/ui/section-head";
 import Reveal from "@/components/effects/reveal";
 import MarqueeStrip from "@/components/sections/marquee-strip";
 import JsonLd from "@/components/seo/json-ld";
+import TransitionLink from "@/components/transition/transition-link";
 import { servicesList } from "@/lib/structured-data";
 
 /*
@@ -66,7 +67,18 @@ export default async function ServicesPage() {
               header={
                 <div className="surface-paper border-ink/15 grid grid-cols-[4em_1fr_10em] items-baseline gap-[1.5em] border-y px-[var(--gutter)] py-[0.9em] max-tablet:grid-cols-[3em_1fr]">
                   <span className="label opacity-60">({service.no})</span>
-                  <h2 className="display text-[clamp(26px,4vw,60px)]">{service.name}</h2>
+                  {/*
+                    The name is the way to the service's own page; the tab
+                    keeps its anchor, so /services#id still lands here.
+                  */}
+                  <h2 className="display text-[clamp(26px,4vw,60px)]">
+                    <TransitionLink
+                      href={`/services/${serviceId(service)}`}
+                      className="transition-colors duration-300 hover:text-accent"
+                    >
+                      {service.name}
+                    </TransitionLink>
+                  </h2>
                   <span className="label justify-self-end opacity-60 max-tablet:hidden">
                     {service.tag}
                   </span>

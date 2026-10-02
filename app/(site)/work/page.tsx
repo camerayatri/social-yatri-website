@@ -5,6 +5,8 @@ import { wallCards } from "@/lib/cms/derive";
 import { listOf, writtenFor } from "@/lib/seo";
 import SectionHead from "@/components/ui/section-head";
 import WorkGrid from "@/components/work/work-grid";
+import JsonLd from "@/components/seo/json-ld";
+import { workCollection } from "@/lib/structured-data";
 
 /*
  * The categories named are the client's own, from the works document. The
@@ -16,11 +18,14 @@ const WRITTEN_FOR = {
   titles: ["Clothing", "Cafe", "Fitness", "Hotel & Resort", "Co-Living Space", "Product Spotlight", "Store Video", "Wedding Content", "Interior", "Personal Branding"],
 };
 
+/** The page's title, which its structured data names it by too. */
+const TITLE = "Reels & Brand Video Portfolio";
+
 export async function generateMetadata(): Promise<Metadata> {
   const { site, works } = await getContent();
   const facts = { name: site.name, titles: works.map((work) => work.title) };
   return {
-    title: "Reels & Brand Video Portfolio",
+    title: TITLE,
     description: writtenFor(
       facts,
       WRITTEN_FOR,
@@ -36,6 +41,7 @@ export default async function WorkPage() {
   const { workIntro } = content;
   return (
     <main>
+      <JsonLd data={workCollection(TITLE, content)} />
       <section className="text-ink px-[var(--gutter)] pt-[calc(var(--corner)+96px)] pb-[7em]">
         <SectionHead
           marker={workIntro.sign}

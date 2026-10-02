@@ -11,6 +11,7 @@ import { getContent } from "@/lib/cms/get-content";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_URL } from "@/lib/seo";
 import { siteGraph } from "@/lib/structured-data";
 import JsonLd from "@/components/seo/json-ld";
+import NoScriptStyles from "@/components/seo/no-script-styles";
 
 /**
  * PP Neue Montreal, served locally. Only the Medium cut is licensed into this
@@ -91,6 +92,18 @@ export async function generateMetadata(): Promise<Metadata> {
      * the rest; the automatic one would only restyle it.
      */
     formatDetection: { telephone: false },
+    /*
+     * Lets a results page show the site's pictures large, in Discover and in
+     * image results, rather than as the thumbnail Google falls back to when a
+     * page says nothing. The work is pictures; a thumbnail sells it short.
+     *
+     * Only the preview size. Index and follow are the defaults already, and
+     * saying them here would print "index, follow" on the 404 page beside
+     * the "noindex" Next gives it: Google takes the stricter of the two, but
+     * a page should not argue with itself. The admin sets its own robots,
+     * which replaces this one whole.
+     */
+    robots: { "max-image-preview": "large" },
     openGraph: {
       type: "website",
       locale: "en_IN",
@@ -113,7 +126,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { site } = await getContent();
+  const { site, services } = await getContent();
   return (
     <html
       lang="en"
@@ -126,7 +139,9 @@ export default async function RootLayout({
       */}
       <body className="bg-paper text-ink font-sans text-[length:var(--size-font)] leading-[1.4] font-medium antialiased">
         {/* Who the studio is and where, once for the whole site. */}
-        <JsonLd data={siteGraph(site)} />
+        <JsonLd data={siteGraph(site, services)} />
+        {/* The copy, shown as it is to anything that reads the page without running it. */}
+        <NoScriptStyles />
         {/*
           The site's chrome (loader, Lenis, cursor, grain, transition, header
           and footer) lives in components/site-shell.tsx, applied by the

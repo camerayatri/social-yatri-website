@@ -1,7 +1,7 @@
 import type { MetadataRoute } from "next";
 
 import { getContent } from "@/lib/cms/get-content";
-import { orderedShoots, workCover } from "@/lib/cms/derive";
+import { orderedShoots, serviceId, workCover } from "@/lib/cms/derive";
 import { absoluteUrl } from "@/lib/seo";
 
 /*
@@ -16,9 +16,9 @@ const LAST_MODIFIED = "2026-10-02";
  * Every page, with the pictures on it.
  *
  * The static pages are the navigation's own list, so a page added to the menu
- * is added here too. The work pages carry their designed cover and the
- * photoshoot page carries every frame on it: an image sitemap is how a
- * photograph that is only ever loaded lazily, inside a carousel, gets found
+ * is added here too. The service and work pages carry their designed covers
+ * and the photoshoot page carries every frame on it: an image sitemap is how
+ * a photograph that is only ever loaded lazily, inside a carousel, gets found
  * by image search at all.
  *
  * Read from the content, so a category or a photograph added in the admin is
@@ -26,7 +26,7 @@ const LAST_MODIFIED = "2026-10-02";
  * full URLs, which are listed as they are rather than prefixed with the site.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const { nav, works, reels, shoots } = await getContent();
+  const { nav, services, works, reels, shoots } = await getContent();
 
   const pages: MetadataRoute.Sitemap = nav.map((item) => ({
     url: absoluteUrl(item.href),
@@ -42,5 +42,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     images: [absoluteUrl(workCover(work, reels).src)],
   }));
 
-  return [...pages, ...workPages];
+  // Each service's own page, with the cover it opens on.
+  const servicePages: MetadataRoute.Sitemap = services.map((service) => ({
+    url: absoluteUrl(`/services/${serviceId(service)}`),
+    lastModified: LAST_MODIFIED,
+    images: [absoluteUrl(service.cover.src)],
+  }));
+
+  return [...pages, ...servicePages, ...workPages];
 }
