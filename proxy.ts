@@ -86,7 +86,10 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Everything except Next's own assets and files served from public/.
+    // /cms in full, file extensions included, so no admin route can ever be
+    // reached at its folder name by looking like a static file.
+    "/cms/:path*",
+    // Everything else except Next's own assets and files served from public/.
     "/((?!_next/static|_next/image|favicon\\.ico|.*\\.(?:png|jpe?g|webp|avif|gif|svg|ico|mp4|webm|mov|woff2?|txt|xml|webmanifest|json|css|js|map)$).*)",
   ],
 };

@@ -21,6 +21,8 @@ import {
 export async function createSession(maintainerId: number, info: { ip: string; ua: string }) {
   const id = newSessionId();
   const exp = Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS;
+  // Sweep sessions that ran out, so the table does not grow with every sign-in.
+  await sql().query(`DELETE FROM sessions WHERE expires_at < now()`);
   await sql().query(
     `INSERT INTO sessions (id_hash, maintainer_id, expires_at, ip, ua) VALUES ($1, $2, to_timestamp($3), $4, $5)`,
     [hashSessionId(id), maintainerId, exp, info.ip, info.ua],
