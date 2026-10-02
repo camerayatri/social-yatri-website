@@ -1,4 +1,7 @@
+import type { CSSProperties } from "react";
 import { getImageProps } from "next/image";
+
+import PLACEHOLDERS from "./placeholders.json";
 
 /**
  * Where the client's media is served from.
@@ -39,6 +42,49 @@ export function media(path: string): string {
   if (/^https?:\/\//.test(path)) return path;
   if (!BASE || !path.startsWith("/")) return path;
   return `${BASE}${path}`;
+}
+
+/** The store path of a media URL ("img/covers/home-04.jpg"), as the placeholder table keys it. */
+function storePath(src: string): string {
+  const rest = BASE && src.startsWith(`${BASE}/`) ? src.slice(BASE.length) : src;
+  return rest.replace(/^\/+/, "");
+}
+
+/** Whether a still has its colours in the table (a seeded one) or needs the optimizer's tiny copy. */
+export function hasPlaceholder(src: string): boolean {
+  return storePath(src) in PLACEHOLDERS;
+}
+
+/**
+ * The paper the site is printed on, a step darker: what a frame with no
+ * placeholder of its own shows while it loads. Close enough to the page to
+ * read as an empty frame rather than a hole.
+ */
+const BLANK = "#e4dfd6";
+
+/**
+ * What a still looks like before it has arrived: the background for the veil
+ * laid over it while it loads (`components/work/veil.tsx`).
+ *
+ * The seeded stills have two colours each in `lib/placeholders.json`, the
+ * averages of their top and bottom halves, drawn as a vertical blend; that
+ * costs no request and is in the page from its first paint. A still the
+ * admin uploaded after the table was made is not in it, so it is drawn from a
+ * 16px copy through the image optimizer instead, which the browser stretches
+ * into a soft version of the frame. That copy is a request of about 300
+ * bytes, made only for a frame that is still loading when it comes near the
+ * screen (`tiny` is false until then), and it is one optimizer variant per
+ * upload, not one per width.
+ */
+export function placeholderStyle(src: string, tiny: boolean): CSSProperties {
+  const tones = (PLACEHOLDERS as Record<string, string>)[storePath(src)];
+  if (tones) {
+    return { backgroundImage: `linear-gradient(#${tones.slice(0, 6)}, #${tones.slice(6, 12)})` };
+  }
+  if (!tiny || !/^https?:\/\//.test(src)) return { backgroundColor: BLANK };
+  const { props } = getImageProps({ src, alt: "", width: 16, height: 16, quality: 75 });
+  const url = props.srcSet?.split(", ")[0]?.split(" ")[0] ?? props.src;
+  return { backgroundColor: BLANK, backgroundImage: `url("${url}")`, backgroundSize: "cover", backgroundPosition: "center" };
 }
 
 /**

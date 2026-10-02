@@ -6,6 +6,7 @@ import Image from "next/image";
 import Carousel from "./carousel";
 import { useMediaViewer, type ViewerItem } from "@/components/effects/media-viewer";
 import type { Shoot } from "@/lib/gallery";
+import Veil from "./veil";
 
 /**
  * The shoot: one frame held large, with the rest of the set as a strip beneath
@@ -156,6 +157,7 @@ export default function ShootViewer({
               loading="eager"
               className="animate-[frame-in_0.5s_var(--ease-brand)] object-cover"
             />
+            <Veil key={shown.src} src={shown.src} />
           </button>
 
           {count > 1 ? (

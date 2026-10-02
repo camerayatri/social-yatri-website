@@ -5,6 +5,7 @@ import Image from "next/image";
 
 import type { GalleryPhoto } from "@/lib/gallery";
 import { useMediaViewer, type ViewerItem } from "@/components/effects/media-viewer";
+import Veil from "./veil";
 
 /**
  * The width a frame is drawn at, for the browser to pick a file by.
@@ -24,7 +25,7 @@ import { useMediaViewer, type ViewerItem } from "@/components/effects/media-view
  * The last entry is a plain bound for a browser that cannot read the math
  * functions, which skips an entry it cannot parse rather than failing.
  */
-function slideSizes(aspect: number, compact: boolean) {
+export function slideSizes(aspect: number, compact = false) {
   const n = (value: number) => value.toFixed(2);
   const width = (lo: number, vh: number, hi: number) =>
     `min(max(${n(aspect * lo)}px, min(${n(aspect * vh)}vh, ${n(aspect * hi)}px)), ${n((aspect * 200) / 3)}vw, 100.00vw)`;
@@ -296,12 +297,14 @@ export default function Carousel({
                     ? `Show frame ${i + 1}: ${photo.alt}`
                     : `Open frame ${i + 1} full screen: ${photo.alt}`
                 }
-                className={`block h-full cursor-pointer transition-opacity duration-500 ${
+                // `relative` holds the veil to the frame's own box.
+                className={`relative block h-full cursor-pointer transition-opacity duration-500 ${
                   onSelect && !active ? "opacity-55 hover:opacity-100" : "opacity-100"
                 }`}
                 style={{ transitionTimingFunction: "var(--ease-brand)" }}
               >
                 {frame}
+                <Veil src={photo.src} />
               </button>
             </figure>
           );
