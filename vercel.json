@@ -1,0 +1,9 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "crons": [
+    {
+      "path": "/api/cron/purge-media",
+      "schedule": "30 21 * * *"
+    }
+  ]
+}
