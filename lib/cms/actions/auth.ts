@@ -8,8 +8,8 @@ import { requireMaintainer } from "../auth/dal";
 import { dummyHash, hashPassword, passwordProblem, verifyPassword } from "../auth/password";
 import { createSession, destroyCurrentSession, destroyOtherSessions } from "../auth/session";
 import { hasDatabase, sql } from "../db";
-import { addHits, clearHits, countHits } from "../rate-limit";
-import { requestInfo } from "../request";
+import { clearHits, takeHit } from "../rate-limit";
+import { requestInfo, senderKey } from "../request";
 
 /**
  * Signing in and out, and changing a password.
@@ -54,10 +54,17 @@ export async function login(_prev: FormState, form: FormData): Promise<FormState
   const { email, password, next } = parsed.data;
   const { ip, ua } = await requestInfo();
   const emailBucket = `login:email:${email}`;
-  const ipBucket = `login:ip:${ip}`;
+  const ipBucket = `login:ip:${senderKey(ip)}`;
 
-  const counts = await countHits([emailBucket, ipBucket]);
-  if (counts[emailBucket] >= EMAIL_LIMIT || counts[ipBucket] >= IP_LIMIT) {
+  /*
+   * Every attempt takes its hit before the password is checked, and the
+   * decision is made on the count that comes back. Counting first and adding
+   * only after a failure let a burst of guesses sent at once all read the
+   * same count and all get through. A good sign-in clears the email's window
+   * below; the address keeps its count, which twenty per window easily allows.
+   */
+  const [byEmail, byIp] = await Promise.all([takeHit(emailBucket), takeHit(ipBucket)]);
+  if (byEmail > EMAIL_LIMIT || byIp > IP_LIMIT) {
     await pause(500);
     await audit(null, "auth.locked", email, { ip });
     return { error: LOCKED };
@@ -71,7 +78,6 @@ export async function login(_prev: FormState, form: FormData): Promise<FormState
   const valid = await verifyPassword(password, account?.password_hash ?? (await dummyHash()));
 
   if (!account || !valid) {
-    await addHits([emailBucket, ipBucket]);
     await audit(null, "auth.fail", email, { ip });
     await pause(Math.max(0, 500 - (Date.now() - started)) + Math.floor(Math.random() * 150));
     return { error: GENERIC };
