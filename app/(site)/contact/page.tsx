@@ -64,7 +64,7 @@ export default function ContactPage() {
             </Reveal>
 
             <div className="mt-[4em]">
-              <ContactForm />
+              <ContactForm connect={CONNECT} />
             </div>
           </div>
 
