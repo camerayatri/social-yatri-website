@@ -71,7 +71,10 @@ export default async function ContactPage() {
             </Reveal>
 
             <div className="mt-[4em]">
-              <ContactForm connect={connect} />
+              <ContactForm
+                connect={connect}
+                contacts={{ email: site.email, phone: site.phone, phoneHref: site.phoneHref }}
+              />
             </div>
           </div>
 

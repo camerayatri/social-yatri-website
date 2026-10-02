@@ -295,12 +295,13 @@ async function notify(submission: Submission) {
  * ------------------------------------------------------------------------- */
 
 /**
- * Called by the form when it mounts: the signed timestamp the submission
- * must carry back, and the details to offer if sending fails. The page
- * itself is cached, so the timestamp cannot be rendered into it.
+ * Called by the form when it mounts, and again when it comes back into view
+ * after a long time away: the signed timestamp the submission must carry
+ * back. The page itself is cached, so the timestamp cannot be rendered into
+ * it.
  */
-export async function startContactForm(): Promise<{ token: string; fallback: ContactFallback }> {
-  return { token: issueToken(), fallback: await fallback() };
+export async function startContactForm(): Promise<{ token: string }> {
+  return { token: issueToken() };
 }
 
 /** Whether this person sent this same enquiry a few minutes ago. */
