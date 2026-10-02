@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import Image from "next/image";
 
-import { ABOUT, PHOTOS } from "@/lib/content";
+import type { ContentDocs } from "@/lib/cms/schema";
 import FlipScrollScene from "@/components/effects/flip-scroll";
 import Reveal from "@/components/effects/reveal";
 import Poster from "@/components/work/poster";
@@ -34,16 +34,16 @@ function Waypoint({ className, children }: { className?: string; children?: Reac
  * frame also shares no row with anything, so its first leg grows over space
  * rather than over the copy.
  */
-export default function StudioNote() {
-  const still = PHOTOS.studioNote;
-  const showreel = PHOTOS.showreel;
+export default function StudioNote({ about, photos }: { about: ContentDocs["about"]; photos: ContentDocs["photos"] }) {
+  const still = photos.studioNote;
+  const showreel = photos.showreel;
 
   return (
     <FlipScrollScene>
       <section className="text-ink relative z-[2] px-[var(--gutter)] pt-[8vh] pb-[4vh]">
         <div className="grid grid-cols-[42%_1fr] gap-[4vw] max-tablet:grid-cols-1">
           <div>
-            <Marker>{ABOUT.sign}</Marker>
+            <Marker>{about.sign}</Marker>
             <div className="mt-[2em] max-w-[212px]">
               <div className="relative aspect-[1/1] overflow-hidden">
                 <Image
@@ -55,7 +55,7 @@ export default function StudioNote() {
                   style={{ objectPosition: still.focus }}
                 />
               </div>
-              <p className="mt-[1em] text-[0.9375em] leading-[1.3]">{ABOUT.claim}</p>
+              <p className="mt-[1em] text-[0.9375em] leading-[1.3]">{about.claim}</p>
             </div>
           </div>
 
@@ -63,7 +63,7 @@ export default function StudioNote() {
             as="p"
             className="max-w-[30em] text-[clamp(18px,1.55vw,22px)] leading-[1.35] tracking-[-0.01em]"
           >
-            {ABOUT.body[0]}
+            {about.body[0]}
           </Reveal>
         </div>
 
@@ -94,14 +94,14 @@ export default function StudioNote() {
           <div>
             {/* Held back until the frame has narrowed into its column. */}
             <Reveal as="h2" start="top 45%" className="display max-w-[10em] text-[clamp(30px,3.4vw,52px)]">
-              {ABOUT.close.join(" ")}
+              {about.close.join(" ")}
             </Reveal>
             <Reveal
               as="p"
               start="top 45%"
               className="mt-[1.5em] max-w-[30em] text-[0.9375em] leading-[1.4] opacity-70"
             >
-              {ABOUT.body[1]}
+              {about.body[1]}
             </Reveal>
           </div>
         </div>

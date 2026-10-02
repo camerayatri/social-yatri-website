@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { getContent } from "@/lib/cms/get-content";
+import { direct } from "@/lib/cms/derive";
 import { LoadingProvider } from "@/components/loader";
 import TransitionProvider from "@/components/transition/transition-provider";
 import SiteHeader from "@/components/site-header";
@@ -17,8 +19,13 @@ import MediaViewerProvider from "@/components/effects/media-viewer";
  * loader, no Lenis, no custom cursor in a place people fill in forms. The
  * public pages get it from `app/(site)/layout.tsx`, and the 404 wraps itself in
  * it because the root not-found renders outside every route group.
+ *
+ * It reads the content itself, so both of those get the header and footer
+ * the admin last saved, and hands the two client components only the handful
+ * of fields they print.
  */
-export default function SiteShell({ children }: { children: ReactNode }) {
+export default async function SiteShell({ children }: { children: ReactNode }) {
+  const { site, nav, connect } = await getContent();
   return (
     <>
       <a
@@ -33,9 +40,21 @@ export default function SiteShell({ children }: { children: ReactNode }) {
 
       <LoadingProvider>
         <MediaViewerProvider>
-          <TransitionProvider chrome={<SiteHeader />}>
+          <TransitionProvider chrome={<SiteHeader nav={nav} name={site.name} email={site.email} city={site.city} />}>
             {children}
-            <SiteFooter />
+            <SiteFooter
+              nav={nav}
+              direct={direct(site)}
+              site={{
+                name: site.name,
+                tagline: site.tagline,
+                email: site.email,
+                city: site.city,
+                copyright: site.copyright,
+                madeIn: site.madeIn,
+              }}
+              connect={{ question: connect.question, submit: connect.submit }}
+            />
           </TransitionProvider>
         </MediaViewerProvider>
       </LoadingProvider>

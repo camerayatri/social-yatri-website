@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
-import { CONNECT, DIRECT, SITE } from "@/lib/content";
+import { getContent } from "@/lib/cms/get-content";
+import { direct } from "@/lib/cms/derive";
 import { Marker } from "@/components/ui/section-head";
 import Reveal from "@/components/effects/reveal";
 import ContactForm from "@/components/sections/contact-form";
@@ -8,13 +9,18 @@ import { Icon } from "@/components/ui/icons";
 
 /*
  * The whole point of the page, in the snippet: somebody searching for the
- * studio's number gets it from the results page without a click.
+ * studio's number gets it from the results page without a click. Read from
+ * the content, so a new number saved in the admin is the number in the
+ * snippet too.
  */
-export const metadata: Metadata = {
-  title: "Contact a Social Media Agency in Kolkata",
-  description: `Visit ${SITE.name} at ${SITE.address}, call ${SITE.phone} or email ${SITE.email}. ${CONNECT.question}`,
-  alternates: { canonical: "/contact" },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { site, connect } = await getContent();
+  return {
+    title: "Contact a Social Media Agency in Kolkata",
+    description: `Visit ${site.name} at ${site.address}, call ${site.phone} or email ${site.email}. ${connect.question}`,
+    alternates: { canonical: "/contact" },
+  };
+}
 
 /**
  * Connect.
@@ -33,7 +39,8 @@ export const metadata: Metadata = {
  * length of the headline, the standfirst and the form to hold position
  * against, which is what keeps the number in view while the form is filled in.
  */
-export default function ContactPage() {
+export default async function ContactPage() {
+  const { site, connect } = await getContent();
   return (
     <main>
       <section className="text-ink px-[var(--gutter)] pt-[calc(var(--corner)+96px)] pb-[7em]">
@@ -45,7 +52,7 @@ export default function ContactPage() {
         */}
         <div className="grid grid-cols-[42%_1fr] grid-rows-[min-content_1fr] gap-x-[4vw] max-tablet:grid-cols-1 max-tablet:grid-rows-none">
           <div className="max-tablet:order-1">
-            <Marker>{CONNECT.sign}</Marker>
+            <Marker>{connect.sign}</Marker>
           </div>
 
           {/*
@@ -54,17 +61,17 @@ export default function ContactPage() {
           */}
           <div className="row-span-2 max-tablet:order-2 max-tablet:row-span-1">
             <Reveal as="h1" className="display text-[clamp(44px,6.6vw,104px)]">
-              {CONNECT.question}
+              {connect.question}
             </Reveal>
             <Reveal
               as="p"
               className="mt-[1.75em] max-w-[30em] text-[0.9375em] leading-[1.4] opacity-70"
             >
-              {CONNECT.sub}
+              {connect.sub}
             </Reveal>
 
             <div className="mt-[4em]">
-              <ContactForm />
+              <ContactForm connect={connect} />
             </div>
           </div>
 
@@ -84,7 +91,7 @@ export default function ContactPage() {
                   still unconfirmed is absent rather than guessed: a wrong
                   handle sends people to somebody else's account.
                 */}
-                {DIRECT.map((entry) => {
+                {direct(site).map((entry) => {
                   const external = entry.href?.startsWith("http") ?? false;
                   return (
                     <a

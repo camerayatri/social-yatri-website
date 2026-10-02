@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-import { SERVICES, SERVICES_INTRO, serviceId } from "@/lib/content";
+import type { ContentDocs } from "@/lib/cms/schema";
 import SectionHead from "@/components/ui/section-head";
 import TransitionLink from "@/components/transition/transition-link";
 
@@ -13,24 +13,36 @@ import TransitionLink from "@/components/transition/transition-link";
  * the sequence runs, inverted. Each row is a full-width rule with the name at
  * display size; hovering pushes the row in and brings its line forward.
  */
-export default function ServicesList({ withHead = true }: { withHead?: boolean }) {
+
+/** One row: what it shows and where it goes, worked out on the server. */
+export type ServiceRow = { no: string; name: string; tag: string; href: string; cover: string };
+
+export default function ServicesList({
+  intro,
+  services,
+  withHead = true,
+}: {
+  intro: Pick<ContentDocs["servicesIntro"], "sign" | "question" | "sub">;
+  services: ServiceRow[];
+  withHead?: boolean;
+}) {
   return (
     <section data-surface="ink" className="surface-ink text-paper px-[var(--gutter)] py-[7em]">
       {withHead ? (
         <SectionHead
-          marker={SERVICES_INTRO.sign}
-          title={SERVICES_INTRO.question}
-          sub={SERVICES_INTRO.sub}
+          marker={intro.sign}
+          title={intro.question}
+          sub={intro.sub}
           className="mb-[4em]"
         />
       ) : null}
 
       <div className="rule border-t">
-        {SERVICES.map((service) => (
+        {services.map((service) => (
           <TransitionLink
             key={service.no}
             // Straight to that service's own section on /services.
-            href={`/services#${serviceId(service)}`}
+            href={service.href}
             className="rule group relative grid grid-cols-[4em_1fr_10em] items-baseline gap-[1.5em] border-b py-[1.1em] transition-[padding] duration-500 hover:pl-[1em] max-tablet:grid-cols-[3em_1fr]"
             style={{ transitionTimingFunction: "var(--ease-brand)" }}
           >
@@ -50,7 +62,7 @@ export default function ServicesList({ withHead = true }: { withHead?: boolean }
               aria-hidden
               className="pointer-events-none absolute top-1/2 right-[11em] aspect-[16/10] w-[13vw] -translate-y-1/2 overflow-hidden opacity-0 transition-opacity duration-500 group-hover:opacity-100 max-tablet:hidden"
             >
-              <Image src={service.cover.src} alt="" fill sizes="13vw" className="object-cover" />
+              <Image src={service.cover} alt="" fill sizes="13vw" className="object-cover" />
             </span>
           </TransitionLink>
         ))}

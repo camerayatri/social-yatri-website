@@ -1,21 +1,23 @@
 "use client";
 
-import { KOLKATA } from "@/lib/content";
+import type { ContentDocs } from "@/lib/cms/schema";
 import SectionHead from "@/components/ui/section-head";
 
 /**
  * Home turf: the claim, then four ruled columns of context.
  */
 export default function Kolkata({
+  kolkata,
   /** `h1` when this section opens a page, which it does on /studio. */
   titleAs = "h2",
   marker,
   surface = "ink",
 }: {
+  kolkata: ContentDocs["kolkata"];
   titleAs?: "h1" | "h2";
   marker?: string;
   surface?: "ink" | "paper";
-} = {}) {
+}) {
   const ink = surface === "ink";
   // The cards sit one level under the section's title, whichever level that is.
   const CardHeading = titleAs === "h1" ? "h2" : "h3";
@@ -27,14 +29,14 @@ export default function Kolkata({
       }`}
     >
       <SectionHead
-        marker={marker ?? KOLKATA.sign}
-        title={KOLKATA.question}
+        marker={marker ?? kolkata.sign}
+        title={kolkata.question}
         titleAs={titleAs}
         size={titleAs === "h1" ? "xl" : "lg"}
       />
 
       <div className="mt-[4em] grid grid-cols-4 gap-[1.5em] max-tablet:grid-cols-2 max-mobile:grid-cols-1">
-        {KOLKATA.cards.map((card, index) => (
+        {kolkata.cards.map((card, index) => (
           <div key={card.title} className="rule border-t pt-[1.1em]">
             <span className="label opacity-60">
               ({String(index + 1).padStart(2, "0")})

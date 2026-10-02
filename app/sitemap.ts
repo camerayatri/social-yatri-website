@@ -1,8 +1,8 @@
 import type { MetadataRoute } from "next";
 
-import { NAV, WORKS, workCover } from "@/lib/content";
-import { GALLERY, SHOOTS } from "@/lib/gallery";
-import { SITE_URL } from "@/lib/seo";
+import { getContent } from "@/lib/cms/get-content";
+import { orderedShoots, workCover } from "@/lib/cms/derive";
+import { absoluteUrl } from "@/lib/seo";
 
 /*
  * When the content last changed, written down rather than taken from the
@@ -12,8 +12,6 @@ import { SITE_URL } from "@/lib/seo";
  */
 const LAST_MODIFIED = "2026-10-02";
 
-const url = (path: string) => `${SITE_URL}${path === "/" ? "" : path}`;
-
 /**
  * Every page, with the pictures on it.
  *
@@ -22,21 +20,27 @@ const url = (path: string) => `${SITE_URL}${path === "/" ? "" : path}`;
  * photoshoot page carries every frame on it: an image sitemap is how a
  * photograph that is only ever loaded lazily, inside a carousel, gets found
  * by image search at all.
+ *
+ * Read from the content, so a category or a photograph added in the admin is
+ * listed as soon as it is saved. The media is on the Blob store and comes as
+ * full URLs, which are listed as they are rather than prefixed with the site.
  */
-export default function sitemap(): MetadataRoute.Sitemap {
-  const pages: MetadataRoute.Sitemap = NAV.map((item) => ({
-    url: url(item.href),
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const { nav, works, reels, shoots } = await getContent();
+
+  const pages: MetadataRoute.Sitemap = nav.map((item) => ({
+    url: absoluteUrl(item.href),
     lastModified: LAST_MODIFIED,
     ...(item.href === "/photoshoot"
-      ? { images: SHOOTS.flatMap((key) => GALLERY[key].photos.map((photo) => url(photo.src))) }
+      ? { images: orderedShoots(shoots).flatMap((shoot) => shoot.photos.map((photo) => absoluteUrl(photo.src))) }
       : null),
   }));
 
-  const works: MetadataRoute.Sitemap = WORKS.map((work) => ({
-    url: url(`/work/${work.slug}`),
+  const workPages: MetadataRoute.Sitemap = works.map((work) => ({
+    url: absoluteUrl(`/work/${work.slug}`),
     lastModified: LAST_MODIFIED,
-    images: [url(workCover(work).src)],
+    images: [absoluteUrl(workCover(work, reels).src)],
   }));
 
-  return [...pages, ...works];
+  return [...pages, ...workPages];
 }

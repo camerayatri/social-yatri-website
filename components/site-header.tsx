@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 
-import { NAV, SITE } from "@/lib/content";
+import type { NavDoc } from "@/lib/cms/schema";
 import { gsap } from "@/lib/gsap";
 import SocialYatriLogo from "@/components/logo/social-yatri-logo";
 import TransitionLink from "@/components/transition/transition-link";
@@ -32,8 +32,21 @@ import TransitionLink from "@/components/transition/transition-link";
  * with a rolling hover on each link.
  *
  * The mark is hidden until the loader hands it over with `Flip.fit`.
+ *
+ * The menu's labels, the studio's name, email and city are content, handed
+ * down by the site shell.
  */
-export default function SiteHeader() {
+export default function SiteHeader({
+  nav,
+  name,
+  email,
+  city,
+}: {
+  nav: NavDoc;
+  name: string;
+  email: string;
+  city: string;
+}) {
   const [open, setOpen] = useState(false);
   const overlay = useRef<HTMLDivElement>(null);
 
@@ -96,7 +109,7 @@ export default function SiteHeader() {
         */}
         <TransitionLink
           href="/"
-          aria-label={`${SITE.name}, home`}
+          aria-label={`${name}, home`}
           className={`chrome z-[350] ${markBox} -mt-[calc((44px-var(--mark-h))/2)] flex min-h-[44px] items-center`}
         >
           <span data-header-logo className="block w-full">
@@ -147,7 +160,7 @@ export default function SiteHeader() {
         style={{ visibility: "hidden" }}
       >
         <nav aria-label="Menu" className="flex flex-col items-end">
-          {NAV.map((item) => (
+          {nav.map((item) => (
             <div key={item.href} className="overflow-hidden">
               <TransitionLink
                 href={item.href}
@@ -175,12 +188,12 @@ export default function SiteHeader() {
 
         <div className="label flex flex-wrap justify-between gap-[1em]">
           <a
-            href={`mailto:${SITE.email}`}
+            href={`mailto:${email}`}
             className="hover:text-accent py-[11px] opacity-65 transition-[opacity,color] duration-300 hover:opacity-100"
           >
-            {SITE.email}
+            {email}
           </a>
-          <span className="opacity-65">{SITE.city}</span>
+          <span className="opacity-65">{city}</span>
         </div>
       </div>
     </>

@@ -7,7 +7,7 @@ import localFont from "next/font/local";
 // on <html> can leave the page unscrollable.
 import "lenis/dist/lenis.css";
 import "./globals.css";
-import { SITE } from "@/lib/content";
+import { getContent } from "@/lib/cms/get-content";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_URL } from "@/lib/seo";
 import { siteGraph } from "@/lib/structured-data";
 import JsonLd from "@/components/seo/json-ld";
@@ -49,64 +49,71 @@ const geistMono = Geist_Mono({
  * the home page's words onto every shared link instead. The same goes for
  * the Twitter card, which takes its title, description and image from Open
  * Graph. The image itself comes from `opengraph-image.tsx` beside this file.
+ *
+ * Generated rather than exported as a constant because the studio's name is
+ * content, which the admin can edit.
  */
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
-  title: {
-    default: DEFAULT_TITLE,
-    template: `%s · ${SITE.name}`,
-  },
-  description: DEFAULT_DESCRIPTION,
-  applicationName: SITE.name,
-  authors: [{ name: SITE.name, url: SITE_URL }],
-  creator: SITE.name,
-  publisher: SITE.name,
-  /*
-   * Search engines have long ignored this tag, so it is a statement of what
-   * the site is about rather than a ranking lever: the phrases people in the
-   * city search with, for the services the studio sells.
-   */
-  keywords: [
-    "social media marketing agency in Kolkata",
-    "social media agency Kolkata",
-    "content creation agency Kolkata",
-    "digital marketing agency Kolkata",
-    "Instagram reels agency Kolkata",
-    "UGC video production Kolkata",
-    "branding agency Kolkata",
-    "personal branding Kolkata",
-    "ad films and product shoots Kolkata",
-    "website development Kolkata",
-    "performance marketing agency Kolkata",
-    "Social Yatri",
-  ],
-  /*
-   * iOS Safari turns anything that looks like a phone number into a link of
-   * its own styling. The number on this site is already a link, styled like
-   * the rest; the automatic one would only restyle it.
-   */
-  formatDetection: { telephone: false },
-  openGraph: {
-    type: "website",
-    locale: "en_IN",
-    siteName: SITE.name,
-  },
-  twitter: { card: "summary_large_image" },
-  /*
-   * The Search Console token, from the environment so it can be set on the
-   * host without a commit. Unset, Next prints no tag at all rather than an
-   * empty one.
-   */
-  verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { site } = await getContent();
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: {
+      default: DEFAULT_TITLE,
+      template: `%s · ${site.name}`,
+    },
+    description: DEFAULT_DESCRIPTION,
+    applicationName: site.name,
+    authors: [{ name: site.name, url: SITE_URL }],
+    creator: site.name,
+    publisher: site.name,
+    /*
+     * Search engines have long ignored this tag, so it is a statement of what
+     * the site is about rather than a ranking lever: the phrases people in the
+     * city search with, for the services the studio sells.
+     */
+    keywords: [
+      "social media marketing agency in Kolkata",
+      "social media agency Kolkata",
+      "content creation agency Kolkata",
+      "digital marketing agency Kolkata",
+      "Instagram reels agency Kolkata",
+      "UGC video production Kolkata",
+      "branding agency Kolkata",
+      "personal branding Kolkata",
+      "ad films and product shoots Kolkata",
+      "website development Kolkata",
+      "performance marketing agency Kolkata",
+      "Social Yatri",
+    ],
+    /*
+     * iOS Safari turns anything that looks like a phone number into a link of
+     * its own styling. The number on this site is already a link, styled like
+     * the rest; the automatic one would only restyle it.
+     */
+    formatDetection: { telephone: false },
+    openGraph: {
+      type: "website",
+      locale: "en_IN",
+      siteName: site.name,
+    },
+    twitter: { card: "summary_large_image" },
+    /*
+     * The Search Console token, from the environment so it can be set on the
+     * host without a commit. Unset, Next prints no tag at all rather than an
+     * empty one.
+     */
+    verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: "#f2efe9",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
+  const { site } = await getContent();
   return (
     <html
       lang="en"
@@ -119,7 +126,7 @@ export default function RootLayout({
       */}
       <body className="bg-paper text-ink font-sans text-[length:var(--size-font)] leading-[1.4] font-medium antialiased">
         {/* Who the studio is and where, once for the whole site. */}
-        <JsonLd data={siteGraph()} />
+        <JsonLd data={siteGraph(site)} />
         {/*
           The site's chrome (loader, Lenis, cursor, grain, transition, header
           and footer) lives in components/site-shell.tsx, applied by the

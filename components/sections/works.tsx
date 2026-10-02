@@ -1,6 +1,6 @@
 "use client";
 
-import { HERO, HOME_COVERS, SITE, WORKS, workCover } from "@/lib/content";
+import type { homeCards } from "@/lib/cms/derive";
 import WorkCard from "@/components/work/work-card";
 import Reveal from "@/components/effects/reveal";
 import SpreadLabel from "@/components/effects/spread-label";
@@ -20,7 +20,7 @@ import TransitionLink from "@/components/transition/transition-link";
 /**
  * Top offsets alternate so no two neighbours align. The shapes alternate too,
  * 4:3 against 3:4 against 1:1, but they are not set here: the client cut the
- * six home covers (`HOME_COVERS`) to exactly those shapes, so each card takes
+ * six home covers (the `homeCovers` document) to exactly those shapes, so each card takes
  * its cover's own ratio and shows the whole artwork. A card without a home
  * cover falls back to the wall's cover and its shape.
  */
@@ -31,20 +31,19 @@ const FOLDED_OFFSET = "max-tablet:mt-[6vh]";
 /** The shape of a card whose still has none of its own (a clip's poster). */
 const DEFAULT_ASPECT = "4 / 5";
 
+/** One card as the server works it out: the home cover for the still, the wall's clip for the hover. */
+type Card = ReturnType<typeof homeCards>[number];
+
 function WorkItem({
   work,
   offset,
   index,
 }: {
-  work: (typeof WORKS)[number];
+  work: Card;
   offset: string;
   index: number;
 }) {
-  // The home cover for the still, the wall's cover only for the clip that
-  // plays on hover: /work is not changed by what the home page wears.
-  const wall = workCover(work);
-  const home = HOME_COVERS[work.slug];
-  const cover = home ? { ...home, reel: wall.reel } : wall;
+  const { cover } = work;
   const aspect = cover.w && cover.h ? `${cover.w} / ${cover.h}` : DEFAULT_ASPECT;
 
   return (
@@ -69,8 +68,22 @@ function WorkItem({
   );
 }
 
-export default function Works() {
-  const featured = WORKS.slice(0, 6);
+export default function Works({
+  cards,
+  statement,
+  total,
+  year,
+}: {
+  /** The first six works, from `homeCards`. */
+  cards: Card[];
+  /** The hero's headline, the one large statement here. */
+  statement: readonly [string, string];
+  /** How many works there are in all, for the count beside "View all". */
+  total: number;
+  /** The copyright line without the studio's name. */
+  year: string;
+}) {
+  const featured = cards;
   const left = featured.filter((_, i) => i % 2 === 0);
   const right = featured.filter((_, i) => i % 2 === 1);
 
@@ -97,7 +110,7 @@ export default function Works() {
         <div className="grid content-start max-tablet:contents">
           {/* The one large statement on the page. */}
           <Reveal as="p" className="display mt-[4vh] max-w-[9em] text-[clamp(34px,3.4vw,52px)]" style={{ order: 1 }}>
-            {HERO.headline[0]} {HERO.headline[1]}
+            {statement[0]} {statement[1]}
           </Reveal>
 
           {right.map((work, i) => (
@@ -116,8 +129,8 @@ export default function Works() {
           View all <span aria-hidden className="transition-colors duration-300 group-hover:text-accent">↳</span>
         </TransitionLink>
         <div className="flex items-baseline justify-between">
-          <span className="label opacity-60">({String(WORKS.length).padStart(2, "0")})</span>
-          <span className="label opacity-60">{SITE.copyright.replace("Social Yatri", "").trim()}</span>
+          <span className="label opacity-60">({String(total).padStart(2, "0")})</span>
+          <span className="label opacity-60">{year}</span>
         </div>
       </div>
     </section>

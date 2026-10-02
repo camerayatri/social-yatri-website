@@ -1,5 +1,5 @@
 import Carousel from "./carousel";
-import { GALLERY, SHOOTS } from "@/lib/gallery";
+import type { orderedShoots } from "@/lib/cms/derive";
 
 /**
  * Every frame the client shot, grouped by the shoot it came from.
@@ -11,13 +11,12 @@ import { GALLERY, SHOOTS } from "@/lib/gallery";
  * reads as a set that continues, which is also the direction everything else on
  * the site moves in.
  */
-export default function ShootStrips() {
+export default function ShootStrips({ shoots }: { shoots: ReturnType<typeof orderedShoots> }) {
   return (
     <>
-      {SHOOTS.map((key, i) => {
-        const shoot = GALLERY[key];
+      {shoots.map((shoot, i) => {
         return (
-          <div key={key} className="pt-[3.5em] pb-[1em]">
+          <div key={shoot.key} className="pt-[3.5em] pb-[1em]">
             <div className="px-[var(--gutter)]">
               <div className="rule mb-[1.5em] flex items-baseline justify-between gap-[1.5em] border-t pt-[1.1em]">
                 <h2 className="statement text-[clamp(18px,2vw,28px)]">{shoot.label}</h2>
@@ -34,9 +33,4 @@ export default function ShootStrips() {
       })}
     </>
   );
-}
-
-/** Frames across every shoot, for the count in the page head. */
-export function shootTotal() {
-  return SHOOTS.reduce((n, key) => n + GALLERY[key].photos.length, 0);
 }

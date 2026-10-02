@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
-import { SITE, WORKS } from "@/lib/content";
-import { GALLERY } from "@/lib/gallery";
-import { REELS } from "@/lib/reels";
+import { getContent } from "@/lib/cms/get-content";
+import { nextWork, workSet } from "@/lib/cms/derive";
 import ShootViewer from "@/components/work/shoot-viewer";
 import ReelStrip from "@/components/work/reel-strip";
 import Reveal from "@/components/effects/reveal";
@@ -15,9 +14,19 @@ import { workBreadcrumb } from "@/lib/structured-data";
 
 type Params = { slug: string };
 
-/** Every category is known at build time, so the detail pages are static. */
-export function generateStaticParams(): Params[] {
-  return WORKS.map((work) => ({ slug: work.slug }));
+/**
+ * Every category the content holds at build time is prerendered. One added in
+ * the admin afterwards is not in that list, so the route keeps
+ * `dynamicParams` on (the default, said out loud here because the work wall
+ * links to a new category the moment it is saved): its page renders on its
+ * first visit and is cached from then on, like the rest. A slug the content
+ * does not know is a 404.
+ */
+export const dynamicParams = true;
+
+export async function generateStaticParams(): Promise<Params[]> {
+  const { works } = await getContent();
+  return works.map((work) => ({ slug: work.slug }));
 }
 
 export async function generateMetadata({
@@ -26,7 +35,8 @@ export async function generateMetadata({
   params: Promise<Params>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const work = WORKS.find((item) => item.slug === slug);
+  const content = await getContent();
+  const work = content.works.find((item) => item.slug === slug);
   if (!work) return { title: "Not found" };
 
   /*
@@ -34,8 +44,7 @@ export async function generateMetadata({
    * the page cannot disagree. Kolkata is named as the studio's city, not as
    * where the footage was shot, which for some sets it was not.
    */
-  const films = work.reels ? (REELS[work.reels]?.length ?? 0) : 0;
-  const photos: number = work.shoot ? GALLERY[work.shoot].photos.length : 0;
+  const { films, photos } = workSet(work, content);
   const counts = [
     films ? `${films} ${films === 1 ? "film" : "films"}` : null,
     photos ? `${photos} ${photos === 1 ? "photo" : "photos"}` : null,
@@ -46,20 +55,20 @@ export async function generateMetadata({
   return {
     // "Store Video" would read "Store Video Reels & Videos".
     title: `${work.title.replace(/ Video$/, "")} Reels & Videos`,
-    description: `${work.title} reels and videos by ${SITE.name}, a social media and content studio in Kolkata${counts ? `: ${counts} in this set` : ""}.`,
+    description: `${work.title} reels and videos by ${content.site.name}, a social media and content studio in Kolkata${counts ? `: ${counts} in this set` : ""}.`,
     alternates: { canonical: `/work/${work.slug}` },
   };
 }
 
 export default async function WorkPage({ params }: { params: Promise<Params> }) {
   const { slug } = await params;
-  const work = WORKS.find((item) => item.slug === slug);
+  const content = await getContent();
+  const work = content.works.find((item) => item.slug === slug);
   if (!work) notFound();
 
-  const index = WORKS.indexOf(work);
-  const next = WORKS[(index + 1) % WORKS.length];
-  const reels = work.reels ? (REELS[work.reels] ?? []) : [];
-  const shoot = work.shoot ? GALLERY[work.shoot] : null;
+  const next = nextWork(content.works, work.slug);
+  // Only this category's clips and shoot reach the strips, not every list.
+  const { reels, shoot } = workSet(work, content);
 
   return (
     <main className="text-ink">
@@ -96,7 +105,7 @@ export default async function WorkPage({ params }: { params: Promise<Params> }) 
         <dl className="grid grid-cols-3 max-mobile:grid-cols-1">
           {[
             { term: "Category", value: work.title },
-            { term: "Made in", value: SITE.city },
+            { term: "Made in", value: content.site.city },
             {
               term: "In this set",
               value: `${reels.length} ${reels.length === 1 ? "film" : "films"}${

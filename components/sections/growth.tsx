@@ -1,17 +1,17 @@
 "use client";
 
-import { GROWTH } from "@/lib/content";
+import type { ContentDocs } from "@/lib/cms/schema";
 import Counter from "@/components/effects/counter";
 import SectionHead from "@/components/ui/section-head";
 
 /** The numbers, set as large as the headline and ruled off from each other. */
-export default function Growth() {
+export default function Growth({ growth }: { growth: ContentDocs["growth"] }) {
   return (
     <section className="text-ink relative px-[var(--gutter)] py-[7em]">
       <SectionHead
-        marker={GROWTH.sign}
-        title={GROWTH.question}
-        sub={GROWTH.sub}
+        marker={growth.sign}
+        title={growth.question}
+        sub={growth.sub}
         className="mb-[4em]"
       />
 
@@ -26,9 +26,9 @@ export default function Growth() {
       */}
       <div className="rule flex flex-wrap items-end gap-x-[0.6em] gap-y-[0.75em] border-t pt-[1.5em]">
         <span className="flex flex-col">
-          <span className="label opacity-60">{GROWTH.before.label}</span>
+          <span className="label opacity-60">{growth.before.label}</span>
           <span className="display text-[clamp(32px,5vw,80px)] opacity-40">
-            {GROWTH.before.value}
+            {growth.before.value}
           </span>
         </span>
 
@@ -40,23 +40,23 @@ export default function Growth() {
         </span>
 
         <span className="flex flex-col">
-          <span className="label opacity-60">{GROWTH.after.label}</span>
+          <span className="label opacity-60">{growth.after.label}</span>
           <span className="display text-[clamp(32px,5vw,80px)]">
-            {GROWTH.after.value}{" "}
-            <span className="label align-baseline opacity-60">{GROWTH.after.unit}</span>
+            {growth.after.value}{" "}
+            <span className="label align-baseline opacity-60">{growth.after.unit}</span>
           </span>
         </span>
 
         <span className="ml-auto flex flex-col items-end">
-          <span className="label opacity-60">{GROWTH.deltaLabel}</span>
+          <span className="label opacity-60">{growth.deltaLabel}</span>
           <span className="display text-accent text-[clamp(32px,5vw,80px)]">
-            {GROWTH.delta}
+            {growth.delta}
           </span>
         </span>
       </div>
 
       <div className="mt-[3.5em] grid grid-cols-4 max-tablet:grid-cols-2 max-mobile:grid-cols-1">
-        {GROWTH.cells.map((cell) => (
+        {growth.cells.map((cell) => (
           <div key={cell.label} className="rule border-t pt-[1.1em] pr-[1.5em] pb-[2em]">
             <div className="display text-[clamp(30px,3.6vw,58px)]">
               <Counter target={cell.target} suffix={cell.suffix} />

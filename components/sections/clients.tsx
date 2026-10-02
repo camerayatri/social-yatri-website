@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 
-import { CLIENTS } from "@/lib/content";
+import type { ContentDocs } from "@/lib/cms/schema";
 import Reveal from "@/components/effects/reveal";
 import SectionHead from "@/components/ui/section-head";
 import TransitionLink from "@/components/transition/transition-link";
@@ -50,9 +50,11 @@ const claimLines = (claim: string | readonly string[]) =>
       ));
 
 export default function Clients({
+  clients,
   surface = "ink",
   variant = "full",
 }: {
+  clients: ContentDocs["clients"];
   surface?: "ink" | "paper";
   variant?: "full" | "brief";
 }) {
@@ -65,16 +67,16 @@ export default function Clients({
       className={`${ink ? "surface-ink text-paper" : "text-ink"} relative px-[var(--gutter)] py-[7em]`}
     >
       <SectionHead
-        marker={CLIENTS.sign}
-        title={CLIENTS.question}
-        sub={CLIENTS.sub}
+        marker={clients.sign}
+        title={clients.question}
+        sub={clients.sub}
         className="mb-[3em]"
       />
 
       <div className="grid grid-cols-[42%_1fr] gap-[4vw] max-tablet:grid-cols-1">
         <div />
         <div className="max-w-[34em]">
-          {CLIENTS.body.map((paragraph) => (
+          {clients.body.map((paragraph) => (
             <Reveal key={paragraph} as="p" className="mt-[1em] text-[1.0625em] opacity-70">
               {paragraph}
             </Reveal>
@@ -85,7 +87,7 @@ export default function Clients({
       {brief ? (
         <div className="mt-[4em]">
           <div className="grid grid-cols-2 gap-x-[4vw] gap-y-[3em] max-tablet:grid-cols-1">
-            {CLIENTS.cases.map((study, index) => (
+            {clients.cases.map((study, index) => (
               <article key={study.name} className="rule border-t pt-[1.5em]">
                 <p className="label opacity-60">
                   ({String(index + 1).padStart(2, "0")}) {study.name}
@@ -159,7 +161,7 @@ export default function Clients({
         </div>
       ) : (
       <div className="mt-[5em]">
-        {CLIENTS.cases.map((study, index) => (
+        {clients.cases.map((study, index) => (
           <article
             key={study.name}
             className="rule grid grid-cols-[42%_1fr] gap-[4vw] border-t pt-[1.5em] pb-[5em] max-tablet:grid-cols-1 max-tablet:gap-[2em]"
@@ -243,38 +245,38 @@ export default function Clients({
       <div className="rule grid grid-cols-[42%_1fr] gap-[4vw] border-t pt-[2.5em] max-tablet:grid-cols-1 max-tablet:gap-[2em]">
         <div>
           <Reveal as="p" className="display max-w-[8em] text-[clamp(28px,3.4vw,52px)]">
-            {CLIENTS.closing.title[0]}
+            {clients.closing.title[0]}
           </Reveal>
           <Reveal
             as="p"
             className="display text-accent max-w-[8em] text-[clamp(28px,3.4vw,52px)]"
           >
-            {CLIENTS.closing.title[1]}
+            {clients.closing.title[1]}
           </Reveal>
         </div>
 
         <div className="max-w-[34em]">
-          {CLIENTS.closing.body.map((paragraph) => (
+          {clients.closing.body.map((paragraph) => (
             <Reveal key={paragraph} as="p" className="mt-[1em] text-[1.0625em] opacity-70">
               {paragraph}
             </Reveal>
           ))}
 
-          <p className="label mt-[2.5em] opacity-60">{CLIENTS.closing.goalsLead}</p>
+          <p className="label mt-[2.5em] opacity-60">{clients.closing.goalsLead}</p>
           {/*
             One goal per line, as the client set them. Run together on a wrapped
             row they read as a single run-on sentence and the repetition of
             "More" (which is the whole rhetorical point) stops landing.
           */}
           <ul className="mt-[0.75em]">
-            {CLIENTS.closing.goals.map((goal) => (
+            {clients.closing.goals.map((goal) => (
               <li key={goal} className="rule statement border-t py-[0.5em] text-[1.25em]">
                 {goal}
               </li>
             ))}
           </ul>
           <p className="mt-[1.5em] text-[1.0625em] opacity-70">
-            {CLIENTS.closing.goalsClose}
+            {clients.closing.goalsClose}
           </p>
         </div>
       </div>
