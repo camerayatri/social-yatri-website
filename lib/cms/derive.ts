@@ -56,3 +56,42 @@ export function workCover(work: WorkDoc, reels: ContentDocs["reels"]): WorkCover
 export function shootTotal(shoots: ContentDocs["shoots"]) {
   return shoots.order.reduce((n, key) => n + (shoots.gallery[key]?.photos.length ?? 0), 0);
 }
+
+/**
+ * The cards on the home page's work section: the first six works, each in the
+ * home cover cut for its slot where there is one. The clip that plays on hover
+ * is always the wall's, so /work is not changed by what the home page wears.
+ */
+export function homeCards(docs: Pick<ContentDocs, "works" | "homeCovers" | "reels">) {
+  return docs.works.slice(0, 6).map((work) => {
+    const wall = workCover(work, docs.reels);
+    const home = docs.homeCovers[work.slug];
+    return { slug: work.slug, title: work.title, cover: home ? { ...home, reel: wall.reel } : wall };
+  });
+}
+
+/** The cards on the /work wall, one per work, in order. */
+export function wallCards(docs: Pick<ContentDocs, "works" | "reels">) {
+  return docs.works.map((work) => ({ slug: work.slug, title: work.title, cover: workCover(work, docs.reels) }));
+}
+
+/** A work's clips, its shoot and how many of each, as the page and its metadata both count them. */
+export function workSet(work: WorkDoc, docs: Pick<ContentDocs, "reels" | "shoots">) {
+  const reels = work.reels ? (docs.reels[work.reels] ?? []) : [];
+  const shoot = work.shoot ? (docs.shoots.gallery[work.shoot] ?? null) : null;
+  return { reels, shoot, films: reels.length, photos: shoot?.photos.length ?? 0 };
+}
+
+/** The work after this one, wrapping round to the first. */
+export function nextWork(works: WorkDoc[], slug: string) {
+  const index = works.findIndex((work) => work.slug === slug);
+  return works[(index + 1) % works.length];
+}
+
+/** The shoots in archive order, each with its key. Keys the order names but the gallery lacks are skipped. */
+export function orderedShoots(shoots: ContentDocs["shoots"]) {
+  return shoots.order.flatMap((key) => {
+    const shoot = shoots.gallery[key];
+    return shoot ? [{ key, ...shoot }] : [];
+  });
+}
