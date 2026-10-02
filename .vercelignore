@@ -1,0 +1,7 @@
+# Local tooling and agent worktrees: whole checkouts with their own
+# node_modules, never part of a deployment.
+.claude
+.vercel
+.next
+node_modules
+*.tsbuildinfo
