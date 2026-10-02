@@ -11,13 +11,6 @@ import { SITE } from "@/lib/content";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_URL } from "@/lib/seo";
 import { siteGraph } from "@/lib/structured-data";
 import JsonLd from "@/components/seo/json-ld";
-import { LoadingProvider } from "@/components/loader";
-import TransitionProvider from "@/components/transition/transition-provider";
-import SiteHeader from "@/components/site-header";
-import SiteFooter from "@/components/site-footer";
-import SmoothScroll from "@/components/effects/smooth-scroll";
-import Cursor from "@/components/effects/cursor";
-import MediaViewerProvider from "@/components/effects/media-viewer";
 
 /**
  * PP Neue Montreal, served locally. Only the Medium cut is licensed into this
@@ -125,26 +118,14 @@ export default function RootLayout({
         is written in `em` and scales rather than stepping at breakpoints.
       */}
       <body className="bg-paper text-ink font-sans text-[length:var(--size-font)] leading-[1.4] font-medium antialiased">
-        <a
-          href="#main"
-          className="label focus:bg-accent focus:text-ink sr-only focus:not-sr-only focus:fixed focus:top-[var(--gutter)] focus:left-[var(--gutter)] focus:z-[500] focus:px-[12px] focus:py-[8px]"
-        >
-          Skip to content
-        </a>
         {/* Who the studio is and where, once for the whole site. */}
         <JsonLd data={siteGraph()} />
-        <SmoothScroll />
-        <Cursor />
-        <div className="grain" aria-hidden />
-
-        <LoadingProvider>
-          <MediaViewerProvider>
-            <TransitionProvider chrome={<SiteHeader />}>
-              {children}
-              <SiteFooter />
-            </TransitionProvider>
-          </MediaViewerProvider>
-        </LoadingProvider>
+        {/*
+          The site's chrome (loader, Lenis, cursor, grain, transition, header
+          and footer) lives in components/site-shell.tsx, applied by the
+          (site) route group, so the admin can share this layout without it.
+        */}
+        {children}
       </body>
     </html>
   );

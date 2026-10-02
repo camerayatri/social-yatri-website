@@ -9,8 +9,9 @@ import { WORKS, workCover } from "@/lib/content";
  * A work page's share image: the category's own cover beside its name.
  *
  * The cover is the client's designed still, the same one the /work wall shows,
- * read from `public` and handed to Satori as a data URL, so nothing is
- * fetched over the network to draw it. The right-hand panel is 4:5 at this
+ * handed to Satori as a data URL. It is read from `public` when it is still a
+ * site path and fetched from the media store when `media()` has made it a full
+ * URL, which is where the content media lives in production. The right-hand panel is 4:5 at this
  * height, which is the shape most of the covers were made in.
  */
 export const alt = "A category of Social Yatri's work, its cover beside the category name";
@@ -22,6 +23,13 @@ export function generateStaticParams() {
   return WORKS.map((work) => ({ slug: work.slug }));
 }
 
+/* A failed fetch fails the build rather than drawing a broken card. */
+async function fetchCover(url: string) {
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`Cover ${url} answered ${response.status}`);
+  return Buffer.from(await response.arrayBuffer());
+}
+
 const PANEL = { width: 504, height: 630 };
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
@@ -30,7 +38,9 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   if (!work) return new Response("Not found", { status: 404 });
 
   const cover = workCover(work);
-  const data = await readFile(join(process.cwd(), "public", cover.src));
+  const data = cover.src.startsWith("https://")
+    ? await fetchCover(cover.src)
+    : await readFile(join(process.cwd(), "public", cover.src));
   const type = cover.src.endsWith(".png") ? "image/png" : "image/jpeg";
   const src = `data:${type};base64,${data.toString("base64")}`;
 
