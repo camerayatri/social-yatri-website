@@ -12,6 +12,7 @@ import { useGSAP } from "@gsap/react";
 
 import { Flip, ScrollTrigger, gsap } from "@/lib/gsap";
 import SocialYatriLogo from "@/components/logo/social-yatri-logo";
+import { introSeen, markIntroSeen } from "@/lib/intro";
 
 const LoadingContext = createContext(false);
 
@@ -206,14 +207,16 @@ function Loader({ onDone }: { onDone: () => void }) {
       const finish = () => {
         if (finishedRef.current) return;
         finishedRef.current = true;
+        markIntroSeen();
         setLocked(false);
         ScrollTrigger.refresh();
         onDone();
       };
 
-      // The intro plays on every load: it is the site's front door, and the
-      // client asked for it every time. Only reduced motion skips it.
-      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // The intro plays once per visit: the first page of a session gets the
+      // film, reloads and every page after it go straight in (see
+      // lib/intro.ts for why). Reduced motion skips it always.
+      if (introSeen() || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
         setHidden(true);
         revealHeaderLogo();
         finish();
@@ -540,6 +543,7 @@ function Loader({ onDone }: { onDone: () => void }) {
   return (
     <div
       ref={root}
+      data-loader
       className="pointer-events-auto fixed inset-0 z-[400] overflow-hidden"
       aria-hidden
     >

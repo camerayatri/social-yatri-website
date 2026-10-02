@@ -13,6 +13,7 @@ import { siteGraph } from "@/lib/structured-data";
 import JsonLd from "@/components/seo/json-ld";
 import NoScriptStyles from "@/components/seo/no-script-styles";
 import Observability from "@/components/observability";
+import { INTRO_SEEN_SCRIPT } from "@/lib/intro";
 
 /**
  * PP Neue Montreal, served locally. Only the Medium cut is licensed into this
@@ -132,6 +133,8 @@ export default async function RootLayout({
     <html
       lang="en"
       className={`${neueMontreal.variable} ${geistMono.variable}`}
+      // The intro script below may mark <html> before React hydrates it.
+      suppressHydrationWarning
     >
       {/*
         `text-[length:var(--size-font)]` wires up the scaling system: the
@@ -139,6 +142,12 @@ export default async function RootLayout({
         is written in `em` and scales rather than stepping at breakpoints.
       */}
       <body className="bg-paper text-ink font-sans text-[length:var(--size-font)] leading-[1.4] font-medium antialiased">
+        {/*
+          First thing in the body, so it runs before anything paints: marks a
+          visit that has already seen the intro film, and the film's panel is
+          then never drawn (see lib/intro.ts).
+        */}
+        <script dangerouslySetInnerHTML={{ __html: INTRO_SEEN_SCRIPT }} />
         {/* Who the studio is and where, once for the whole site. */}
         <JsonLd data={siteGraph(site, services)} />
         {/* The copy, shown as it is to anything that reads the page without running it. */}
