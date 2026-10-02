@@ -17,6 +17,7 @@
  */
 
 import { z } from "zod";
+import { HOME_SLOTS, fitsHomeSlot } from "./derive";
 import { isAllowedMediaSrc, mediaKindFromSrc } from "./media-src";
 
 /** Bumped when a schema changes shape, so cached content from the old shape is not reused. */
@@ -461,20 +462,26 @@ export function issuesToFieldErrors(issues: readonly { path: PropertyKey[]; mess
  * ------------------------------------------------------------------------- */
 
 /**
- * The six home cards are cut to these shapes, in the order the first six works
- * run. A home cover must match its slot within 2%, or the card would crop the
- * client's artwork.
+ * The six home cards are cut to fixed shapes (`HOME_SLOTS`), in the order the
+ * first six works run. A home cover put on a card must match its shape within
+ * 2%, or the card would crop the client's artwork.
  */
-export const HOME_SLOTS = [4 / 3, 3 / 4, 1, 4 / 3, 3 / 4, 4 / 3] as const;
+export { HOME_SLOTS, fitsHomeSlot };
+
+/** How a home card's shape is said in the admin: "4:3 landscape". */
+export function homeSlotName(index: number) {
+  const slot = HOME_SLOTS[index];
+  return slot === 4 / 3 ? "4:3 landscape" : slot === 3 / 4 ? "3:4 portrait" : slot === 1 ? "1:1 square" : `${slot?.toFixed(2)}:1`;
+}
 
 function slotIssue(cover: { w: number; h: number }, index: number) {
-  const slot = HOME_SLOTS[index];
-  if (slot === undefined) return null;
-  const ratio = cover.w / cover.h;
-  if (Math.abs(ratio - slot) / slot <= 0.02) return null;
-  const names: Record<number, string> = { [4 / 3]: "4:3 landscape", [3 / 4]: "3:4 portrait", 1: "1:1 square" };
-  return `Card ${index + 1} on the home page is ${names[slot]}; this cover is ${cover.w}×${cover.h}.`;
+  if (fitsHomeSlot(cover, index)) return null;
+  return `Card ${index + 1} on the home page is ${homeSlotName(index)}; this cover is ${cover.w}×${cover.h}.`;
 }
+
+/** The same picture at the same size: an entry a save leaves as it was. */
+const samePicture = (a: { src: string; w: number; h: number } | undefined, b: { src: string; w: number; h: number }) =>
+  a !== undefined && a.src === b.src && a.w === b.w && a.h === b.h;
 
 /**
  * Rules that span documents: a work naming a reel list that exists, a home
@@ -519,15 +526,23 @@ export function crossValidate<K extends ContentKey>(key: K, data: ContentDocs[K]
     });
   }
 
-  if (key === "homeCovers" || key === "works") {
+  // Home covers are checked only when they themselves are saved, and only
+  // the pictures this save puts in place. Reordering or deleting works never
+  // waits on them: a cover the new order lands on a card of another shape (or
+  // one whose work is gone) is simply not used, the card falls back to the
+  // work's own cover (see `homeCards`), and the Home editor names the card.
+  // Saving the covers again leaves such an entry alone for the same reason,
+  // so one stale picture never holds up a change to another card.
+  if (key === "homeCovers") {
     for (const [slugKey, cover] of Object.entries(all.homeCovers)) {
+      if (samePicture(docs.homeCovers[slugKey], cover)) continue;
       const index = slugs.indexOf(slugKey);
       if (index === -1) {
-        if (key === "homeCovers") issues.push({ path: [slugKey], message: `There is no work called "${slugKey}".` });
+        issues.push({ path: [slugKey], message: `There is no work called "${slugKey}".` });
         continue;
       }
       const problem = slotIssue(cover, index);
-      if (problem) issues.push({ path: key === "homeCovers" ? [slugKey] : [index], message: problem });
+      if (problem) issues.push({ path: [slugKey], message: problem });
     }
   }
 

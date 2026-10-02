@@ -13,6 +13,7 @@
 
 import assert from "node:assert/strict";
 import { DEFAULTS } from "../lib/cms/defaults";
+import { homeCards, workCover } from "../lib/cms/derive";
 import { CONTENT_KEYS, SCHEMAS, crossValidate, issuesToFieldErrors, type ContentDocs } from "../lib/cms/schema";
 
 let failures = 0;
@@ -99,7 +100,7 @@ check("removing a reel list a work uses is refused", () => {
   delete reels.clothing;
   assert.ok(crossValidate("reels", reels, DEFAULTS).length > 0);
 });
-check("home covers match their slot within 2%", () => {
+check("a picture put on a home card must match its shape within 2%", () => {
   const covers = clone().homeCovers;
   covers.clothing = { ...covers.clothing, w: 900, h: 1200 };
   assert.equal(crossValidate("homeCovers", covers, DEFAULTS).length, 1);
@@ -108,6 +109,38 @@ check("home covers are keyed to real works", () => {
   const covers = clone().homeCovers;
   covers["not-a-work"] = { ...covers.clothing };
   assert.equal(crossValidate("homeCovers", covers, DEFAULTS).length, 1);
+});
+check("reordering or deleting works never waits on a home cover", () => {
+  const docs = clone();
+  // Swap the first two (4:3 and 3:4 cards): both covers now sit on the wrong shape.
+  const swapped = [docs.works[1], docs.works[0], ...docs.works.slice(2)];
+  assert.deepEqual(crossValidate("works", swapped, DEFAULTS), []);
+  assert.deepEqual(crossValidate("works", docs.works.slice(1), DEFAULTS), []);
+});
+check("a home cover on a card of another shape is not used; the card falls back", () => {
+  const docs = clone();
+  const swapped = { ...docs, works: [docs.works[1], docs.works[0], ...docs.works.slice(2)] };
+  const cards = homeCards(swapped);
+  for (const card of cards.slice(0, 2)) {
+    const wall = workCover(swapped.works.find((w) => w.slug === card.slug)!, swapped.reels);
+    assert.equal(card.cover.src, wall.src);
+  }
+  assert.equal(cards[0].aspect, String(4 / 3));
+  assert.equal(cards[2].cover.src, docs.homeCovers[docs.works[2].slug]!.src);
+  // As stored, every default card wears its own home cover at its own size.
+  assert.deepEqual(
+    homeCards(docs).map((c) => c.cover.src),
+    docs.works.slice(0, 6).map((w) => docs.homeCovers[w.slug]!.src),
+  );
+});
+check("saving the covers again leaves a stale one alone, but refuses a new wrong one", () => {
+  const docs = clone();
+  const swapped = { ...docs, works: [docs.works[1], docs.works[0], ...docs.works.slice(2)] };
+  const covers = clone().homeCovers;
+  covers[docs.works[2].slug] = { ...covers[docs.works[2].slug]!, alt: "Changed description" };
+  assert.deepEqual(crossValidate("homeCovers", covers, swapped), []);
+  covers[docs.works[3].slug] = { ...covers[docs.works[1].slug]! };
+  assert.equal(crossValidate("homeCovers", covers, swapped).length, 1);
 });
 check("shoot order names real shoots", () => {
   const shoots = clone().shoots;

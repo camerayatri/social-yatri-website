@@ -10,7 +10,7 @@ import { PhotoField } from "../fields/photo-field";
 import { ViewOnSite } from "../fields/view-on-site";
 import { Button, Notice } from "../ui";
 import type { DocState } from "@/lib/cms/repo";
-import { HOME_SLOTS } from "@/lib/cms/schema";
+import { HOME_SLOTS, fitsHomeSlot } from "@/lib/cms/schema";
 
 /**
  * The home page, one section per content document, in the order the page
@@ -137,16 +137,42 @@ export default function HomeEditor({
           {(form) => {
             const shown = new Set(featured.map((w) => w.slug));
             const others = Object.keys(form.value).filter((slug) => !shown.has(slug));
+            // The covers are kept per category but the shapes belong to the
+            // cards, so a reorder in the Work editor can leave a picture on a
+            // card of another shape. The site then shows the Work page cover
+            // there; this says which card, without holding anything up.
+            const unfit = featured.flatMap((work, i) => {
+              const cover = form.value[work.slug];
+              return cover && !fitsHomeSlot(cover, i) ? [{ work, i, cover }] : [];
+            });
             return (
               <>
                 <p className="-mt-1 text-[13px] opacity-60">
                   The cards show the first six categories on the Work page, in that order. To change which categories appear, reorder them in
                   the Work editor.
                 </p>
+                {unfit.length ? (
+                  <Notice tone="warning">
+                    <p>
+                      {unfit.length === 1 ? "One card is" : `${unfit.length} cards are`} not showing {unfit.length === 1 ? "its" : "their"}{" "}
+                      picture, because the categories were reordered and the picture is cut for a different shape. The site shows the
+                      category&apos;s Work page cover there instead, cut to the card&apos;s shape.
+                    </p>
+                    <ul className="mt-1 list-disc pl-5">
+                      {unfit.map(({ work, i, cover }) => (
+                        <li key={work.slug}>
+                          Card {i + 1}, {work.title}: the card is {shapeName(HOME_SLOTS[i])} and the picture is {cover.w}×{cover.h}. Choose a{" "}
+                          {shapeName(HOME_SLOTS[i])} picture, or use the Work page cover.
+                        </li>
+                      ))}
+                    </ul>
+                  </Notice>
+                ) : null}
                 <div className="grid gap-6 tablet:grid-cols-2">
                   {featured.map((work, i) => {
                     const ratio = HOME_SLOTS[i];
                     const cover = form.value[work.slug] ?? null;
+                    const fits = !cover || fitsHomeSlot(cover, i);
                     return (
                       <FieldGroup
                         key={work.slug}
@@ -175,7 +201,9 @@ export default function HomeEditor({
                           strictShape
                           sized
                           hint={
-                            cover
+                            !fits
+                              ? `Not shown: this picture is ${cover!.w}×${cover!.h}, cut for another card. The card shows ${work.title}'s cover from the Work page, cut to ${shapeName(ratio)}, until a ${shapeName(ratio)} picture is chosen.`
+                              : cover
                               ? `Must be ${shapeName(ratio)}. A picture of any other shape is refused.`
                               : `None chosen: the card shows ${work.title}'s cover from the Work page, cropped to ${shapeName(ratio)}.`
                           }
