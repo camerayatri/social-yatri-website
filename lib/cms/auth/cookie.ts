@@ -74,3 +74,16 @@ export const sessionCookieOptions = (exp: number) => ({
   path: "/",
   expires: new Date(exp * 1000),
 });
+
+/**
+ * Removes the cookie. A plain `cookies.delete()` sends the expired cookie
+ * without `Secure`, and a browser refuses any `__Host-` cookie without it, so
+ * the old cookie stayed put after signing out. Expiring it with the same
+ * attributes it was set with is what actually clears it.
+ */
+export const clearedSessionCookie = {
+  name: SESSION_COOKIE,
+  value: "",
+  ...sessionCookieOptions(0),
+  maxAge: 0,
+};

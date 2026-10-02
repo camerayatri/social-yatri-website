@@ -4,6 +4,7 @@ import {
   SESSION_COOKIE,
   SESSION_TTL_SECONDS,
   SLIDE_WHEN_BELOW_SECONDS,
+  clearedSessionCookie,
   sessionCookieOptions,
   signSession,
   verifySession,
@@ -68,7 +69,7 @@ export function proxy(request: NextRequest) {
     const login = new URL(`${base}/login`, request.url);
     if (rest && rest !== "/") login.searchParams.set("next", rest);
     const response = withAdminHeaders(NextResponse.redirect(login));
-    if (request.cookies.has(SESSION_COOKIE)) response.cookies.delete(SESSION_COOKIE);
+    if (request.cookies.has(SESSION_COOKIE)) response.cookies.set(clearedSessionCookie);
     return response;
   }
 
