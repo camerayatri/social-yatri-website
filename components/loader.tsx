@@ -586,8 +586,16 @@ function Loader({ onDone }: { onDone: () => void }) {
           disablePictureInPicture
           tabIndex={-1}
         >
-          <source src={FILM_AV1_SRC} type={FILM_AV1_TYPE} />
-          <source src={FILM_SRC} type="video/mp4" />
+          {/*
+            Only for a reader who will see it. With reduced motion asked for,
+            the intro is skipped, and the film (1MB, with `preload="auto"`)
+            was still downloaded in full on every visit; a source the media
+            query rules out is never fetched. A browser that does not read
+            `media` on a video's source ignores it and loads the film as
+            before.
+          */}
+          <source src={FILM_AV1_SRC} type={FILM_AV1_TYPE} media="(prefers-reduced-motion: no-preference)" />
+          <source src={FILM_SRC} type="video/mp4" media="(prefers-reduced-motion: no-preference)" />
         </video>
         {/* The developed print: paper with its grain, brought up over the black. */}
         <div data-loader-print className="surface-paper absolute inset-0 opacity-0" />

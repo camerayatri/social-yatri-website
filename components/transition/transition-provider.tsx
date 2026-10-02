@@ -159,7 +159,9 @@ export default function TransitionProvider({
    * buffered, which is why the sheet is never seen bare in practice.
    */
   useEffect(() => {
-    if (!loaded) return;
+    // With reduced motion a link simply navigates and the clip never plays,
+    // so it is never fetched either.
+    if (!loaded || reducedMotion.current) return;
     const video = videoRef.current;
     if (!video) return;
     video.preload = "auto";
