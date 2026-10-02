@@ -51,6 +51,19 @@ const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /** Waits until a timestamp is old enough to be accepted. */
 const ripen = (stamp: Stamp) => sleep(Math.max(0, stamp.at + MIN_WAIT_MS - Date.now()));
 
+/**
+ * The conversion, for Vercel Web Analytics when it is installed: its script
+ * defines `window.va`, and this is the call its `track()` makes. No-op
+ * otherwise. Nothing the visitor typed goes with it.
+ */
+function trackSent() {
+  try {
+    (window as { va?: (event: "event", data: { name: string }) => void }).va?.("event", { name: "Contact form sent" });
+  } catch {
+    // Analytics must never be the reason a form looks broken.
+  }
+}
+
 const IDLE: ContactState = { status: "idle" };
 
 /** What the form shows: the last result, numbered so a repeat of the same one is still news. */
@@ -135,6 +148,7 @@ export default function ContactForm({ connect, contacts }: Props) {
         }
       }
 
+      if (result.status === "sent") trackSent();
       return { ...result, n };
     } catch {
       return { status: "failed", fallback: contacts, n };
