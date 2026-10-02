@@ -39,3 +39,18 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# The client's media. It is served from the Vercel Blob store (see
+# lib/media.ts and scripts/upload-media.mjs); the copies under /public are
+# for local development and are not part of the repository. The chrome that
+# ships with the site stays tracked: /public/video/entry.mp4,
+# /public/video/entry-av1.mp4, /public/video/taxi.mp4 and /public/img/noise.avif.
+/public/video/reels/
+/public/video/posters/
+/public/img/*.jpg
+/public/img/clients/
+/public/img/covers/
+/public/img/gallery/
+/public/img/home-covers/
+/public/img/services/
+/public/img/work-covers/

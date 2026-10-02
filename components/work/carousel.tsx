@@ -7,6 +7,35 @@ import type { GalleryPhoto } from "@/lib/gallery";
 import { useMediaViewer, type ViewerItem } from "@/components/effects/media-viewer";
 
 /**
+ * The width a frame is drawn at, for the browser to pick a file by.
+ *
+ * Slides are bound by height, not width (see `.carousel-slide` in
+ * `globals.css`): the height is `min(clamp(260px, 52vh, 620px), two thirds of
+ * the column)`, and the width is that times the frame's aspect, capped at the
+ * column. The old figure, 46vw, was the width of the widest landscape frame on
+ * a wide screen, so a portrait frame drawn 310px wide fetched a file sized for
+ * 660, and a 120px thumbnail under the shoot display did the same. This is the
+ * same arithmetic as the stylesheet, per frame. The gutter is left out (it
+ * is 16 to 20px), which errs a few pixels wide, never narrow.
+ *
+ * The vw figures are written with decimals on purpose: `next/image` scans
+ * `sizes` for whole-number vw values and drops every width below the
+ * smallest one it finds, which would cut the small files a thumbnail wants.
+ * The last entry is a plain bound for a browser that cannot read the math
+ * functions, which skips an entry it cannot parse rather than failing.
+ */
+function slideSizes(aspect: number, compact: boolean) {
+  const n = (value: number) => value.toFixed(2);
+  const width = (lo: number, vh: number, hi: number) =>
+    `min(max(${n(aspect * lo)}px, min(${n(aspect * vh)}vh, ${n(aspect * hi)}px)), ${n((aspect * 200) / 3)}vw, 100.00vw)`;
+  const normal = width(260, 52, 620);
+  const fallback = `${Math.round(aspect * 620)}px`;
+  return compact
+    ? `(max-width: 991px) ${width(120, 22, 260)}, ${normal}, ${fallback}`
+    : `${normal}, ${fallback}`;
+}
+
+/**
  * The full set of frames from one shoot, as a horizontal strip.
  *
  * A native overflow scroller with scroll snapping rather than a transformed
@@ -245,9 +274,7 @@ export default function Carousel({
               alt={photo.alt}
               width={photo.w}
               height={photo.h}
-              // Rendered width follows the slide's height, so this is a bound
-              // rather than an exact figure: the widest a landscape frame gets.
-              sizes="(max-width: 768px) 88vw, 46vw"
+              sizes={slideSizes(photo.w / photo.h, compact)}
               loading={i < eager ? "eager" : "lazy"}
               draggable={false}
               className="h-full w-auto max-w-none object-cover select-none"

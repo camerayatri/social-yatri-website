@@ -148,7 +148,12 @@ export default function ShootViewer({
               alt={shown.alt}
               fill
               sizes="(max-width: 768px) 100vw, 72vh"
-              priority
+              // At once, but not ahead of everything: on a page with clips
+              // this frame sits under the reel strip, whose posters are what
+              // is on screen first. `priority`, which this was, is
+              // deprecated in Next 16 and would also have hoisted it into
+              // the head as a preload.
+              loading="eager"
               className="animate-[frame-in_0.5s_var(--ease-brand)] object-cover"
             />
           </button>

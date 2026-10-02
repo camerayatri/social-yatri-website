@@ -13,6 +13,7 @@
  */
 
 import type { ShootKey } from "./gallery";
+import { media } from "./media";
 import { REELS, type Reel, type ReelKey } from "./reels";
 import { MAP_URL } from "./seo";
 
@@ -149,7 +150,7 @@ export const SERVICES: Service[] = [
   {
     no: "01",
     name: "Social Media Management",
-    cover: { src: "/img/services/social-media-management.jpg", alt: "Man in sunglasses and a pinstripe suit points at the camera from behind a laptop, social media icons around him, captioned Your social media, handled strategically" },
+    cover: { src: media("/img/services/social-media-management.jpg"), alt: "Man in sunglasses and a pinstripe suit points at the camera from behind a laptop, social media icons around him, captioned Your social media, handled strategically" },
     desc: "Your social media, handled strategically.",
     tag: "Ongoing",
     body: [
@@ -171,7 +172,7 @@ export const SERVICES: Service[] = [
   {
     no: "02",
     name: "Social Media Marketing",
-    cover: { src: "/img/services/social-media-marketing.jpg", alt: "Curly-haired man in a red check shirt smiles at a laptop beside a yellow mug, captioned Your social media, handled strategically" },
+    cover: { src: media("/img/services/social-media-marketing.jpg"), alt: "Curly-haired man in a red check shirt smiles at a laptop beside a yellow mug, captioned Your social media, handled strategically" },
     desc: "Get seen by the right people.",
     tag: "Growth",
     body: [
@@ -186,7 +187,7 @@ export const SERVICES: Service[] = [
   {
     no: "03",
     name: "Content Creation",
-    cover: { src: "/img/services/content-creation.jpg", alt: "Black and white figure at a ship's wheel in smoke, captioned Create content" },
+    cover: { src: media("/img/services/content-creation.jpg"), alt: "Black and white figure at a ship's wheel in smoke, captioned Create content" },
     desc: "Scroll-stopping content. Built for your brand.",
     tag: "Production",
     body: [
@@ -208,7 +209,7 @@ export const SERVICES: Service[] = [
   {
     no: "04",
     name: "Content Strategy",
-    cover: { src: "/img/services/content-strategy.jpg", alt: "Man pulling a baffled face at a laptop, captioned Scroll-stopping content, built for your brand" },
+    cover: { src: media("/img/services/content-strategy.jpg"), alt: "Man pulling a baffled face at a laptop, captioned Scroll-stopping content, built for your brand" },
     desc: "Don’t just create content. Create content with a reason.",
     tag: "Foundation",
     body: [
@@ -223,7 +224,7 @@ export const SERVICES: Service[] = [
   {
     no: "05",
     name: "UGC Videos",
-    cover: { src: "/img/services/ugc-video.jpg", alt: "Woman in white being filmed on a phone rig, captioned Make your brand feel real" },
+    cover: { src: media("/img/services/ugc-video.jpg"), alt: "Woman in white being filmed on a phone rig, captioned Make your brand feel real" },
     desc: "Make your brand feel real.",
     tag: "Production",
     body: [
@@ -238,7 +239,7 @@ export const SERVICES: Service[] = [
   {
     no: "06",
     name: "Branding",
-    cover: { src: "/img/services/branding.jpg", alt: "Man painted red with garlands beside a coffee cup labelled Brand, captioned Build a brand people recognize" },
+    cover: { src: media("/img/services/branding.jpg"), alt: "Man painted red with garlands beside a coffee cup labelled Brand, captioned Build a brand people recognize" },
     desc: "Build a brand people recognize.",
     tag: "Design",
     body: [
@@ -260,7 +261,7 @@ export const SERVICES: Service[] = [
   {
     no: "07",
     name: "Personal Branding",
-    cover: { src: "/img/services/personal-branding.jpg", alt: "White-bearded man in a black waistcoat points at the camera from a desk, captioned Turn your expertise into influence" },
+    cover: { src: media("/img/services/personal-branding.jpg"), alt: "White-bearded man in a black waistcoat points at the camera from a desk, captioned Turn your expertise into influence" },
     desc: "Turn your expertise into influence.",
     tag: "1:1",
     body: [
@@ -275,7 +276,7 @@ export const SERVICES: Service[] = [
   {
     no: "08",
     name: "Ad Films & Product Shoots",
-    cover: { src: "/img/services/ad-product-shoots.jpg", alt: "Man in a suit holding a monkey beside a penguin, a camera on him, captioned Make your product impossible to ignore" },
+    cover: { src: media("/img/services/ad-product-shoots.jpg"), alt: "Man in a suit holding a monkey beside a penguin, a camera on him, captioned Make your product impossible to ignore" },
     desc: "Make your product impossible to ignore.",
     tag: "Production",
     body: [
@@ -290,7 +291,7 @@ export const SERVICES: Service[] = [
   {
     no: "09",
     name: "Website Development",
-    cover: { src: "/img/services/website-development.jpg", alt: "Man in a black suit at a laptop, captioned Your website should work as hard as your brand" },
+    cover: { src: media("/img/services/website-development.jpg"), alt: "Man in a black suit at a laptop, captioned Your website should work as hard as your brand" },
     desc: "Your website should work as hard as your brand.",
     tag: "Build",
     body: [
@@ -311,7 +312,7 @@ export const SERVICES: Service[] = [
   {
     no: "10",
     name: "Performance Marketing",
-    cover: { src: "/img/services/performance-marketing.jpg", alt: "Two men at a laptop with a rising bar chart, captioned Spend smarter, grow faster" },
+    cover: { src: media("/img/services/performance-marketing.jpg"), alt: "Two men at a laptop with a rising bar chart, captioned Spend smarter, grow faster" },
     desc: "Spend smarter. Grow faster.",
     tag: "Paid",
     body: [
@@ -462,7 +463,7 @@ export const WORKS: Work[] = [
     // The woman, the orange kurta, the gramophone and the carved screen are
     // the cover clip's.
     cover: {
-      src: "/img/work-covers/clothing.jpg",
+      src: media("/img/work-covers/clothing.jpg"),
       w: 707,
       h: 942,
       alt: "Woman in an orange kurta set with gold embroidery walks towards the camera through a black and white room, a gramophone on a table to her left and a carved wooden screen and white blossoms behind her",
@@ -475,7 +476,7 @@ export const WORKS: Work[] = [
     // Sent later than the other nine, in the same 3:4 as the clothing and
     // fitness covers: the beachfront terrace of the cafe reels from the air.
     cover: {
-      src: "/img/work-covers/cafe.jpg",
+      src: media("/img/work-covers/cafe.jpg"),
       w: 900,
       h: 1200,
       alt: "White and blue beachfront cafe with a rooftop terrace, palms and a sunset over the sea behind it, from the air",
@@ -489,7 +490,7 @@ export const WORKS: Work[] = [
     // The athlete from the fitness clip, in the same magenta top, black
     // shorts and pink trainers.
     cover: {
-      src: "/img/work-covers/fitness.jpg",
+      src: media("/img/work-covers/fitness.jpg"),
       w: 707,
       h: 942,
       alt: "Athlete in a magenta crop top and black shorts grimaces as she whips a pair of battle ropes across the green turf of a gym",
@@ -503,7 +504,7 @@ export const WORKS: Work[] = [
     // The peaked safari tent of the cover clip's drone shot, seen from the
     // ground.
     cover: {
-      src: "/img/work-covers/hotel-and-resort.jpg",
+      src: media("/img/work-covers/hotel-and-resort.jpg"),
       w: 1024,
       h: 1280,
       alt: "Peaked canvas safari tent on a paved platform, seen through a frame of sunlit green leaves under a blue sky",
@@ -516,7 +517,7 @@ export const WORKS: Work[] = [
     // The man from the Koliving clips, in the same maroon shirt, inside one
     // of the rooms this time.
     cover: {
-      src: "/img/work-covers/co-living-space.jpg",
+      src: media("/img/work-covers/co-living-space.jpg"),
       w: 1024,
       h: 1280,
       alt: "Man in a maroon shirt throws his arms wide in a bright twin room with two beds, two desks, a magenta steel wardrobe and plants on the shelves",
@@ -529,7 +530,7 @@ export const WORKS: Work[] = [
     // The same model, coat and pair of olive ribbed suitcases as the cover
     // clip, drawn rather than photographed.
     cover: {
-      src: "/img/work-covers/product-spotlight.jpg",
+      src: media("/img/work-covers/product-spotlight.jpg"),
       w: 1024,
       h: 1280,
       alt: "Illustration of a woman in a yellow coat, white crop top and jeans sitting on an olive ribbed suitcase, a smaller matching case in front, against a blue gradient",
@@ -542,7 +543,7 @@ export const WORKS: Work[] = [
     // The Fashor storefront and the woman in pink with a green dupatta from
     // the cover clip, drawn rather than photographed.
     cover: {
-      src: "/img/work-covers/store-video.jpg",
+      src: media("/img/work-covers/store-video.jpg"),
       w: 1024,
       h: 1280,
       alt: "Illustration of a smiling woman in a pale pink dress and teal dupatta with open palms outside the Fashor store, its gold sign above her and a second sign in Tamil to her left",
@@ -560,7 +561,7 @@ export const WORKS: Work[] = [
     // The one wedding still among the nine. Whether this couple appears in
     // the wedding clips is not confirmed.
     cover: {
-      src: "/img/work-covers/wedding-content.jpg",
+      src: media("/img/work-covers/wedding-content.jpg"),
       w: 1024,
       h: 1280,
       alt: "Laughing bride in a blush floral lehenga and groom in a cream sherwani and turban raise their joined hands as gold confetti falls, smoke at their feet and white lotus props either side",
@@ -574,7 +575,7 @@ export const WORKS: Work[] = [
     // The living room of the interior shoot: the same curved sofa, boucle
     // armchairs and oval marble table as interior-living-room.jpg.
     cover: {
-      src: "/img/work-covers/interior.jpg",
+      src: media("/img/work-covers/interior.jpg"),
       w: 1024,
       h: 1280,
       alt: "Cream living room with a curved beige sofa, two boucle armchairs and an oval marble coffee table holding a laptop and white flowers, wall panels edged in gold behind",
@@ -592,7 +593,7 @@ export const WORKS: Work[] = [
     // The man from the cover clip, same beard, checked blazer and flag pin,
     // on a courtroom set.
     cover: {
-      src: "/img/work-covers/personal-branding.jpg",
+      src: media("/img/work-covers/personal-branding.jpg"),
       w: 1024,
       h: 1280,
       alt: "Bearded man in a checked blazer and black-framed glasses sits at a desk with a gavel and law books, brass scales of justice behind him",
@@ -608,12 +609,12 @@ export const WORKS: Work[] = [
  * `WORKS` cannot put a cover on the wrong piece.
  */
 export const HOME_COVERS: Partial<Record<Work["slug"], Photo & { w: number; h: number }>> = {
-  clothing: { src: "/img/home-covers/clothing.jpg", w: 1200, h: 900, alt: "Woman in an orange embroidered kurta set beside a gramophone and a carved screen" },
-  cafe: { src: "/img/home-covers/cafe.jpg", w: 900, h: 1200, alt: "White Greek-style building of The Beach Terrace with palms and bougainvillea at dusk" },
-  fitness: { src: "/img/home-covers/fitness.jpg", w: 1080, h: 1080, alt: "Athlete in a magenta top hauls blue battle ropes on turf in a gym" },
-  "hotel-and-resort": { src: "/img/home-covers/hotel-and-resort.jpg", w: 1200, h: 900, alt: "Peaked safari tent in sunlit grassland seen through leaves" },
-  "co-living-space": { src: "/img/home-covers/co-living-space.jpg", w: 900, h: 1200, alt: "Man with arms open in a PG twin room with a magenta wardrobe and a window" },
-  "product-spotlight": { src: "/img/home-covers/product-spotlight.jpg", w: 1200, h: 900, alt: "Woman in a beige coat and jeans sits on two olive hardshell suitcases against a blue sky" },
+  clothing: { src: media("/img/home-covers/clothing.jpg"), w: 1200, h: 900, alt: "Woman in an orange embroidered kurta set beside a gramophone and a carved screen" },
+  cafe: { src: media("/img/home-covers/cafe.jpg"), w: 900, h: 1200, alt: "White Greek-style building of The Beach Terrace with palms and bougainvillea at dusk" },
+  fitness: { src: media("/img/home-covers/fitness.jpg"), w: 1080, h: 1080, alt: "Athlete in a magenta top hauls blue battle ropes on turf in a gym" },
+  "hotel-and-resort": { src: media("/img/home-covers/hotel-and-resort.jpg"), w: 1200, h: 900, alt: "Peaked safari tent in sunlit grassland seen through leaves" },
+  "co-living-space": { src: media("/img/home-covers/co-living-space.jpg"), w: 900, h: 1200, alt: "Man with arms open in a PG twin room with a magenta wardrobe and a window" },
+  "product-spotlight": { src: media("/img/home-covers/product-spotlight.jpg"), w: 1200, h: 900, alt: "Woman in a beige coat and jeans sits on two olive hardshell suitcases against a blue sky" },
 };
 
 /**
@@ -773,7 +774,7 @@ export const CLIENTS = {
   cases: [
     {
       name: "Koliving",
-      logo: { src: "/img/clients/koliving-mark.jpg", alt: "Koliving logo", bg: "#ffb901" },
+      logo: { src: media("/img/clients/koliving-mark.jpg"), alt: "Koliving logo", bg: "#ffb901" },
       claim: "From 300 followers to 5,000+, and 15M+ views.",
       intro: [
         "Koliving is a premium PG and co-living brand in Kolkata, offering modern living spaces for students and young professionals.",
@@ -806,7 +807,7 @@ export const CLIENTS = {
         "From being another PG brand to becoming a brand people started noticing.",
       ],
       reels: "co-living-space",
-      frame: "/img/interior-bedroom.jpg",
+      frame: media("/img/interior-bedroom.jpg"),
       alt: "Symmetrical bed head-on beneath a backlit plaster relief panel",
     },
     {
@@ -816,7 +817,7 @@ export const CLIENTS = {
        * the Store Video work; the case study copy names EnvyMe Fashion. Used
        * as sent, and flagged to the client to confirm which brand this is.
        */
-      logo: { src: "/img/clients/fashor-mark.jpg", alt: "Fashor logo", bg: "#ffffff" },
+      logo: { src: media("/img/clients/fashor-mark.jpg"), alt: "Fashor logo", bg: "#ffffff" },
       /*
        * Two authored lines. As one string the browser broke it between the
        * figure and its unit ("From 12K to 4.1" / "lakh+ followers.") on every
@@ -855,7 +856,7 @@ export const CLIENTS = {
        * wedding shoot in Rajasthan, which was another client's work standing
        * in for this one.
        */
-      frame: "/video/posters/clothing-03.jpg",
+      frame: media("/video/posters/clothing-03.jpg"),
       alt: "Woman in a white floral anarkali stands barefoot before carved wooden screens hung with marigold strings",
       focus: "50% 35%",
     },
@@ -906,7 +907,7 @@ export const PHOTOS: Record<"showreel" | "studioNote", Photo> = {
    * which is true, and it can be swapped the day a team photograph arrives.
    */
   showreel: {
-    src: "/img/studio-crew-zensu.jpg",
+    src: media("/img/studio-crew-zensu.jpg"),
     alt: "Two of the crew direct a model seated on a suitcase on the Zensu set, one of them showing her a laptop",
     focus: "50% 45%",
   },
@@ -920,7 +921,7 @@ export const PHOTOS: Record<"showreel" | "studioNote", Photo> = {
    * client work where the studio itself should be.
    */
   studioNote: {
-    src: "/img/studio-crew-camera.jpg",
+    src: media("/img/studio-crew-camera.jpg"),
     alt: "One of the crew bends over a camera on a tripod in the warehouse studio, suitcases lined up behind him",
     focus: "50% 50%",
   },

@@ -29,6 +29,19 @@ const LoadingContext = createContext(false);
  * was written for.
  */
 const FILM_SRC = "/video/entry.mp4";
+/**
+ * The same film in AV1, offered first: 1.0MB against the H.264 file's 1.6MB,
+ * and the film is on the critical path of every first visit. Encoded from
+ * that file with SVT-AV1 at CRF 34, frame for frame (144 frames at 24fps, so
+ * every frame number below holds for both), with the first frame's white and
+ * the last frames' black measured identical (#ffffff, #000000) and an SSIM of
+ * 0.997 against it. The codecs string is what lets a browser without an AV1
+ * decoder (older Safari, most notably) skip straight to the H.264 file
+ * without fetching a byte of this one. Both stay in /public: the film is the
+ * site's, not the client's, and is timed against this code.
+ */
+const FILM_AV1_SRC = "/video/entry-av1.mp4";
+const FILM_AV1_TYPE = 'video/mp4; codecs="av01.0.05M.08"';
 const FILM_FPS = 24;
 const FILM_BLACK_FRAME = 130;
 
@@ -565,7 +578,6 @@ function Loader({ onDone }: { onDone: () => void }) {
         */}
         <video
           ref={videoRef}
-          src={FILM_SRC}
           className="absolute inset-0 h-full w-full object-cover [object-position:57%_50%]"
           muted
           playsInline
@@ -573,7 +585,10 @@ function Loader({ onDone }: { onDone: () => void }) {
           preload="auto"
           disablePictureInPicture
           tabIndex={-1}
-        />
+        >
+          <source src={FILM_AV1_SRC} type={FILM_AV1_TYPE} />
+          <source src={FILM_SRC} type="video/mp4" />
+        </video>
         {/* The developed print: paper with its grain, brought up over the black. */}
         <div data-loader-print className="surface-paper absolute inset-0 opacity-0" />
       </div>
