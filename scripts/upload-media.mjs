@@ -46,6 +46,14 @@ const TYPES = {
   ".mp4": "video/mp4",
 };
 
+/*
+ * The SDK retries a failed request up to ten times on its own, with a growing
+ * back-off and the same, already-expired deadline, which is how one dropped
+ * connection became a run that sat silent for twenty minutes. Retries are
+ * done here instead, each with a fresh deadline, and are printed.
+ */
+process.env.VERCEL_BLOB_RETRIES ??= "0";
+
 const force = process.argv.includes("--force");
 const dryRun = process.argv.includes("--dry-run");
 
@@ -79,7 +87,7 @@ async function uploadOne(sitePath) {
 
   if (!force && !dryRun) {
     try {
-      const existing = await head(pathname);
+      const existing = await attempt((abortSignal) => head(pathname, { abortSignal }), 0);
       if (existing.size === size) return { sitePath, status: "skipped", size };
     } catch (error) {
       if (!(error instanceof BlobNotFoundError)) throw error;
@@ -89,15 +97,41 @@ async function uploadOne(sitePath) {
 
   // A buffer, not a stream: every file here is a few megabytes, and a
   // streamed body stalled the request indefinitely in testing.
-  await put(pathname, size > MULTIPART_OVER ? createReadStream(local) : await readFile(local), {
-    access: "public",
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    cacheControlMaxAge: MAX_AGE,
-    contentType,
-    multipart: size > MULTIPART_OVER,
-  });
+  const body = size > MULTIPART_OVER ? null : await readFile(local);
+  await attempt(
+    (abortSignal) =>
+      put(pathname, body ?? createReadStream(local), {
+        access: "public",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        cacheControlMaxAge: MAX_AGE,
+        contentType,
+        multipart: size > MULTIPART_OVER,
+        abortSignal,
+      }),
+    size,
+  );
   return { sitePath, status: "uploaded", size };
+}
+
+/**
+ * Runs a request with a deadline and retries it. Some requests to the store
+ * simply never answered, which with no deadline held a worker forever and,
+ * once all four were held, the whole run. The deadline allows a slow link
+ * (a minute, plus a second per 256KB); a not-found is an answer, not a
+ * failure, and is passed straight back.
+ */
+async function attempt(request, size, tries = 4) {
+  const ms = 60_000 + Math.ceil(size / 262_144) * 1000;
+  for (let i = 1; ; i++) {
+    try {
+      return await request(AbortSignal.timeout(ms));
+    } catch (error) {
+      if (error instanceof BlobNotFoundError || i >= tries) throw error;
+      console.log(`  retry ${i}      ${error instanceof Error ? error.message : error}`);
+      await new Promise((resolve) => setTimeout(resolve, 2000 * i));
+    }
+  }
 }
 
 const limitAt = process.argv.indexOf("--limit");
