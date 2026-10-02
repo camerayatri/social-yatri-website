@@ -17,11 +17,18 @@ import { gsap } from "@/lib/gsap";
 export default function SpreadLabel({
   children,
   className,
+  as: Tag = "h2",
 }: {
   children: string;
   className?: string;
+  /**
+   * The heading level. A real heading element rather than a div with
+   * `role="heading"`: the role is enough for a screen reader, but a crawler
+   * builds the outline from elements, and to it the div was not a heading.
+   */
+  as?: "h2" | "h3" | "h4";
 }) {
-  const root = useRef<HTMLDivElement>(null);
+  const root = useRef<HTMLHeadingElement>(null);
   const letters = children.split("");
 
   useGSAP(
@@ -94,12 +101,10 @@ export default function SpreadLabel({
   );
 
   return (
-    <div
+    <Tag
       ref={root}
       className={`pointer-events-none sticky top-[calc(var(--corner)+56px)] z-10 mx-[calc(var(--corner)-var(--gutter))] flex whitespace-pre ${className ?? ""}`}
       aria-label={children}
-      role="heading"
-      aria-level={2}
     >
       {letters.map((letter, i) => (
         <span
@@ -111,6 +116,6 @@ export default function SpreadLabel({
           {letter}
         </span>
       ))}
-    </div>
+    </Tag>
   );
 }

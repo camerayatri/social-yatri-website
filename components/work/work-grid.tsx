@@ -67,9 +67,10 @@ export default function WorkGrid() {
             </div>
 
             <div className="rule mt-[0.9em] flex items-baseline justify-between border-t pt-[0.7em]">
-              <h3 className="statement text-[clamp(18px,1.7vw,26px)] transition-colors duration-300 group-hover:text-accent">
+              {/* h2: the grid sits straight under the page's h1, with no section heading between. */}
+              <h2 className="statement text-[clamp(18px,1.7vw,26px)] transition-colors duration-300 group-hover:text-accent">
                 {work.title}
-              </h3>
+              </h2>
               <span className="label opacity-60">
                 ({String(index + 1).padStart(2, "0")})
               </span>

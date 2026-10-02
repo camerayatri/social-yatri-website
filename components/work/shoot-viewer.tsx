@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 
 import Carousel from "./carousel";
@@ -44,6 +44,7 @@ export default function ShootViewer({
   const [active, setActive] = useState(opening);
   const viewer = useMediaViewer();
   const root = useRef<HTMLElement>(null);
+  const headingId = useId();
 
   const shown = photos[active];
   const count = photos.length;
@@ -83,7 +84,16 @@ export default function ShootViewer({
   }, [step]);
 
   return (
-    <section ref={root} aria-label={shoot.label}>
+    <section ref={root} aria-labelledby={headingId}>
+      {/*
+        The section's heading, for the outline and for anyone moving through
+        the page by headings. Hidden, because the design already names the set
+        in the caption under the display and a second visible title would
+        repeat it; the reel strip above has its own h2, so this is its peer.
+      */}
+      <h2 id={headingId} className="sr-only">
+        {shoot.label}
+      </h2>
       {/*
         The display's height is the constant and its width follows the frame,
         but the width is capped at the column too. Without that cap a landscape

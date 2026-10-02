@@ -36,9 +36,10 @@ export default function ServicesList({ withHead = true }: { withHead?: boolean }
           >
             <span className="label opacity-60 transition-[color,opacity] duration-300 group-hover:text-accent group-hover:opacity-100">({service.no})</span>
 
-            <span className="display text-[clamp(28px,4vw,60px)]">
+            {/* A heading under the section's own, so the index reads as one in the outline. */}
+            <h3 className="display text-[clamp(28px,4vw,60px)]">
               {service.name}
-            </span>
+            </h3>
 
             <span className="label justify-self-end opacity-60 max-tablet:hidden">
               {service.tag}

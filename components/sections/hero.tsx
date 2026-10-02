@@ -121,7 +121,7 @@ export default function Hero() {
         behind line two gets a halo to separate against. It is invisible on
         paper at every other width.
       */}
-      <h1
+      <div
         data-hero-fade
         /*
          * On a phone the block is lifted clear of the fixed corner control,
@@ -140,18 +140,27 @@ export default function Hero() {
           (351px at 15px) wrapped at 390 too; two extra lines put the top of
           the block into the front card of the helix on a 667px screen.
         */}
-        <span className="label mb-[0.75em] block text-[clamp(14px,1.05vw,19px)] max-mobile:text-[13px]">{HERO.eyebrow}</span>
+        <p className="label mb-[0.75em] block text-[clamp(14px,1.05vw,19px)] max-mobile:text-[13px]">{HERO.eyebrow}</p>
 
-        <span className="statement block text-[clamp(32px,3.8vw,56px)]">
-          {HERO.lede[0]}
+        {/*
+          The page's one h1 is the claim alone. The block used to be the h1 as
+          a whole, which made the heading a list of four disciplines, a slogan
+          and a line of Hindi. The hidden prefix is for the outline and for a
+          screen reader landing on it: the claim says what the studio does to
+          brands but not what or where the studio is.
+        */}
+        <h1 className="statement block text-[clamp(32px,3.8vw,56px)]">
+          <span className="sr-only">Social Yatri, social media marketing agency in Kolkata. </span>
+          {/* The space reads as one before the break and is never drawn. */}
+          {HERO.lede[0]}{" "}
           <br />
           {HERO.lede[1]}
-        </span>
+        </h1>
 
-        <span className="label mt-[0.7em] block text-[clamp(15px,1.15vw,21px)] opacity-70 max-mobile:text-[14px]" lang="hi-Latn">
+        <p className="label mt-[0.7em] block text-[clamp(15px,1.15vw,21px)] opacity-70 max-mobile:text-[14px]" lang="hi-Latn">
           {SITE.tagline}
-        </span>
-      </h1>
+        </p>
+      </div>
 
       {/*
         The sound switch, bottom-right, mirroring the statement bottom-left.

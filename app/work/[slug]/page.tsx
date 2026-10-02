@@ -76,7 +76,8 @@ export default async function WorkPage({ params }: { params: Promise<Params> }) 
         The footage first, because that is what the client shoots. The strip
         plays on hover and latches on a click.
       */}
-      <ReelStrip reels={reels} />
+      {/* Titled by category, so the page's h2 says what the reels are of. */}
+      <ReelStrip reels={reels} title={`${work.title} reels`} />
 
       {/*
         Then the photography, where this category has any: one frame held large

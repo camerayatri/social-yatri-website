@@ -17,6 +17,8 @@ export default function Kolkata({
   surface?: "ink" | "paper";
 } = {}) {
   const ink = surface === "ink";
+  // The cards sit one level under the section's title, whichever level that is.
+  const CardHeading = titleAs === "h1" ? "h2" : "h3";
   return (
     <section
       data-surface={ink ? "ink" : undefined}
@@ -37,7 +39,7 @@ export default function Kolkata({
             <span className="label opacity-60">
               ({String(index + 1).padStart(2, "0")})
             </span>
-            <h3 className="statement mt-[1.5em] text-[1.25em]">{card.title}</h3>
+            <CardHeading className="statement mt-[1.5em] text-[1.25em]">{card.title}</CardHeading>
             <p className="mt-[0.5em] text-[0.9375em] opacity-70">{card.body}</p>
           </div>
         ))}
