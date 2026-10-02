@@ -150,7 +150,10 @@ export function Uploader({
       let posterUrl: string | null = null;
       if (picked.kind === "video") {
         setStage("Saving the poster");
-        const poster = await new Promise<Blob | null>((r) => canvasRef.current?.toBlob(r, "image/jpeg", 0.85) ?? r(null));
+        // toBlob answers through its callback and returns nothing, so the
+        // missing-canvas case has to be decided before calling it, not after.
+        const canvas = canvasRef.current;
+        const poster = canvas ? await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.85)) : null;
         if (!poster) throw new Error("The poster frame couldn't be captured. Move the scrubber and try again.");
         const name = safeName(picked.file.name).replace(/\.[a-z0-9]+$/, "");
         const res = await upload(`media/${name}-poster.jpg`, poster, {
