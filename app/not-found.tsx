@@ -1,5 +1,22 @@
+import type { Metadata } from "next";
+
 import BubbleButton from "@/components/effects/bubble-button";
 import { Marker } from "@/components/ui/section-head";
+
+/*
+ * Without this the tab and the history entry read as the home page, because
+ * the layout's default title is all there is to inherit.
+ *
+ * Exported as metadata rather than rendered as a `<title>` in the tree. The
+ * docs only describe a metadata export for `global-not-found.js`, but Next
+ * resolves one from `not-found.js` too, for unmatched URLs and for
+ * `notFound()` alike. A rendered `<title>` was tried first: it is hoisted into
+ * the head after the layout's own, and a browser shows the first of the two.
+ * Next adds `noindex` to the 404 on its own.
+ */
+export const metadata: Metadata = {
+  title: "Page not found",
+};
 
 export default function NotFound() {
   return (

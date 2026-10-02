@@ -27,9 +27,25 @@ export async function generateMetadata({
   const work = WORKS.find((item) => item.slug === slug);
   if (!work) return { title: "Not found" };
 
+  /*
+   * The counts are the page's own "In this set" figures, so the snippet and
+   * the page cannot disagree. Kolkata is named as the studio's city, not as
+   * where the footage was shot, which for some sets it was not.
+   */
+  const films = work.reels ? (REELS[work.reels]?.length ?? 0) : 0;
+  const photos: number = work.shoot ? GALLERY[work.shoot].photos.length : 0;
+  const counts = [
+    films ? `${films} ${films === 1 ? "film" : "films"}` : null,
+    photos ? `${photos} ${photos === 1 ? "photo" : "photos"}` : null,
+  ]
+    .filter(Boolean)
+    .join(" and ");
+
   return {
-    title: work.title,
-    description: `${work.title} content by ${SITE.name}, ${SITE.city}.`,
+    // "Store Video" would read "Store Video Reels & Videos".
+    title: `${work.title.replace(/ Video$/, "")} Reels & Videos`,
+    description: `${work.title} reels and videos by ${SITE.name}, a social media and content studio in Kolkata${counts ? `: ${counts} in this set` : ""}.`,
+    alternates: { canonical: `/work/${work.slug}` },
   };
 }
 

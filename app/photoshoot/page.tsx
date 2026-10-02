@@ -4,9 +4,16 @@ import { PHOTOSHOOT } from "@/lib/content";
 import SectionHead from "@/components/ui/section-head";
 import ShootStrips, { shootTotal } from "@/components/work/shoot-strips";
 
+/*
+ * Kolkata is where the studio is, not where these were shot: the wedding set
+ * is in Rajasthan, and a title reading "photoshoots in Kolkata" would caption
+ * those frames with a city they were not taken in. So the city is attached to
+ * the studio and the shoots are named by what they are.
+ */
 export const metadata: Metadata = {
-  title: "Photoshoot portfolio",
-  description: PHOTOSHOOT.sub,
+  title: "Photoshoots: Weddings, Interiors & Events",
+  description: `The photoshoot portfolio of Social Yatri, a Kolkata content studio: weddings, interiors, events, studio family portraits, fitness and hotels. ${shootTotal()} frames.`,
+  alternates: { canonical: "/photoshoot" },
 };
 
 /**

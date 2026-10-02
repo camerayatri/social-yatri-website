@@ -7,9 +7,16 @@ import SectionHead from "@/components/ui/section-head";
 import Reveal from "@/components/effects/reveal";
 import MarqueeStrip from "@/components/sections/marquee-strip";
 
+/*
+ * The standfirst ("We turn brands into stories people remember.") was the
+ * description here, and it names neither a service nor a place. This one
+ * names all ten, in the order the page runs them.
+ */
 export const metadata: Metadata = {
-  title: "Services",
-  description: SERVICES_INTRO.sub,
+  title: "Social Media & Content Services in Kolkata",
+  description:
+    "Social media management and marketing, content creation and strategy, UGC videos, branding, ad films, websites and performance marketing from Kolkata.",
+  alternates: { canonical: "/services" },
 };
 
 export default function ServicesPage() {

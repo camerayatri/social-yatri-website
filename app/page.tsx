@@ -1,3 +1,5 @@
+import type { Metadata } from "next";
+
 import Hero from "@/components/sections/hero";
 import Works from "@/components/sections/works";
 // import StudioNote from "@/components/sections/studio-note";
@@ -5,6 +7,15 @@ import RouteSteps from "@/components/sections/route-steps";
 import ServicesList from "@/components/sections/services-list";
 import Growth from "@/components/sections/growth";
 import Clients from "@/components/sections/clients";
+
+/*
+ * The title and description are the layout's defaults, which are written for
+ * this page; only the canonical has to be said here, because the layout
+ * deliberately sets none.
+ */
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 /**
  * Home: the spiral, then what we do, the work it made, how it gets made, the

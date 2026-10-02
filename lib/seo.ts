@@ -32,6 +32,20 @@ export const MAP_URL = "https://maps.app.goo.gl/xhdpjiVAs4BLt6tR9";
  */
 export const MAP_CID_URL = "https://maps.google.com/?cid=2497474643187856927";
 
+/**
+ * The title and description the home page carries, and every page falls back
+ * to when it sets none of its own.
+ *
+ * Written for the search a business owner in the city actually types rather
+ * than as a slogan: the client's own line, "Kyunki, Joh dikhta hai wahi toh
+ * bikta hai", is the best thing on the site and says nothing to a search
+ * engine about what the studio does or where. The services named are the
+ * ones on the services list, and nothing more.
+ */
+export const DEFAULT_TITLE = "Social Yatri · Social Media Marketing Agency in Kolkata";
+export const DEFAULT_DESCRIPTION =
+  "Social Yatri is a social media marketing and content creation agency in Kolkata: reels, UGC videos, branding, ad films, websites and performance marketing.";
+
 /** Where the pin on that listing sits, as Google has it. */
 export const GEO = { latitude: 22.5249488, longitude: 88.3492109 } as const;
 

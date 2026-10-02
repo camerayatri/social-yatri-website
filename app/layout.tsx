@@ -8,6 +8,7 @@ import localFont from "next/font/local";
 import "lenis/dist/lenis.css";
 import "./globals.css";
 import { SITE } from "@/lib/content";
+import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_URL } from "@/lib/seo";
 import { LoadingProvider } from "@/components/loader";
 import TransitionProvider from "@/components/transition/transition-provider";
 import SiteHeader from "@/components/site-header";
@@ -37,19 +38,71 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
 });
 
+/**
+ * What every page inherits.
+ *
+ * Each page sets its own title, description and canonical; this is the frame
+ * around them. Two things are left out on purpose.
+ *
+ * No canonical. Metadata merges shallowly down the tree, so a canonical set
+ * here would be printed on any page that forgot its own, and every such page
+ * would tell Google it is a copy of the home page.
+ *
+ * No Open Graph title or description. Next fills both from the page's own
+ * title and description when the Open Graph block leaves them out, so a link
+ * to /services unfurls as the services page. Setting them here would stamp
+ * the home page's words onto every shared link instead. The same goes for
+ * the Twitter card, which takes its title, description and image from Open
+ * Graph. The image itself comes from `opengraph-image.tsx` beside this file.
+ */
 export const metadata: Metadata = {
-  metadataBase: new URL("https://socialyatri.com"),
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: `${SITE.name} · ${SITE.tagline}`,
+    default: DEFAULT_TITLE,
     template: `%s · ${SITE.name}`,
   },
-  description: SITE.description,
+  description: DEFAULT_DESCRIPTION,
+  applicationName: SITE.name,
+  authors: [{ name: SITE.name, url: SITE_URL }],
+  creator: SITE.name,
+  publisher: SITE.name,
+  /*
+   * Search engines have long ignored this tag, so it is a statement of what
+   * the site is about rather than a ranking lever: the phrases people in the
+   * city search with, for the services the studio sells.
+   */
+  keywords: [
+    "social media marketing agency in Kolkata",
+    "social media agency Kolkata",
+    "content creation agency Kolkata",
+    "digital marketing agency Kolkata",
+    "Instagram reels agency Kolkata",
+    "UGC video production Kolkata",
+    "branding agency Kolkata",
+    "personal branding Kolkata",
+    "ad films and product shoots Kolkata",
+    "website development Kolkata",
+    "performance marketing agency Kolkata",
+    "Social Yatri",
+  ],
+  /*
+   * iOS Safari turns anything that looks like a phone number into a link of
+   * its own styling. The number on this site is already a link, styled like
+   * the rest; the automatic one would only restyle it.
+   */
+  formatDetection: { telephone: false },
   openGraph: {
-    title: `${SITE.name} · ${SITE.tagline}`,
-    description: SITE.description,
-    locale: "en_IN",
     type: "website",
+    locale: "en_IN",
+    siteName: SITE.name,
   },
+  twitter: { card: "summary_large_image" },
+  /*
+   * The Search Console token, from the environment so it can be set on the
+   * host without a commit. Unset, Next prints no tag at all rather than an
+   * empty one.
+   */
+  verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
 };
 
 export const viewport: Viewport = {

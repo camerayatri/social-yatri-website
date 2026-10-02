@@ -5,9 +5,14 @@ import { Marker } from "@/components/ui/section-head";
 import Reveal from "@/components/effects/reveal";
 import ContactForm from "@/components/sections/contact-form";
 
+/*
+ * The whole point of the page, in the snippet: somebody searching for the
+ * studio's number gets it from the results page without a click.
+ */
 export const metadata: Metadata = {
-  title: "Connect",
-  description: SITE.description,
+  title: "Contact a Social Media Agency in Kolkata",
+  description: `Visit ${SITE.name} at ${SITE.address}, call ${SITE.phone} or email ${SITE.email}. ${CONNECT.question}`,
+  alternates: { canonical: "/contact" },
 };
 
 /**
