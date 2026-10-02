@@ -64,7 +64,12 @@ export default function SiteFooter() {
     <footer data-surface="ink" className="gradient-ink text-paper relative flex min-h-dvh flex-col overflow-hidden px-[var(--gutter)] pt-[calc(var(--corner)+96px)] pb-[calc(13vw+72px)] max-mobile:pb-0">
       <div className="grid grid-cols-[1fr_auto] items-start gap-[3em] max-tablet:grid-cols-1">
         <div>
-          <Reveal as="h2" className="display max-w-[6.5em] text-[clamp(44px,6.6vw,104px)]">
+          <Reveal
+            as="h2"
+            className="display max-w-[6.5em] text-[clamp(44px,6.6vw,104px)]"
+            // On /contact this is the tagline, which is Hindi in Latin letters.
+            lang={onContact ? "hi-Latn" : undefined}
+          >
             {onContact ? SITE.tagline : CONNECT.question}
           </Reveal>
 

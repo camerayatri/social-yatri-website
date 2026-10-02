@@ -48,9 +48,17 @@ export default function SectionHead({
             size === "xl" ? "text-[clamp(42px,6.6vw,104px)]" : "text-[clamp(32px,4vw,64px)]"
           }`}
         >
-          {lines.map((line) => (
+          {/*
+            A space between authored lines. Each is a block, so it is never
+            seen, but without it the text of the heading runs the lines
+            together ("Born in Kolkata.Built for the internet.") for anything
+            that reads the text rather than the layout: a crawler, a snippet,
+            a copy and paste.
+          */}
+          {lines.map((line, i) => (
             <span key={line} className="block">
               {line}
+              {i < lines.length - 1 ? " " : null}
             </span>
           ))}
         </Reveal>

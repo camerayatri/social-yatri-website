@@ -580,6 +580,19 @@ html.has-cursor textarea {
   visibility: hidden;
 }
 
+/*
+ * The lines SplitText makes, and the masks around them. They are spans, so
+ * they are valid inside a heading or a paragraph, and spans are inline, so
+ * this is what makes each one a line: SplitText only writes `display: block`
+ * and `position: relative` inline when it is wrapping in divs. The mask's
+ * class is the line's with `-mask` appended, which SplitText does itself.
+ */
+.reveal-line,
+.reveal-line-mask {
+  display: block;
+  position: relative;
+}
+
 /* ---------------------------------------------------------------------------
  * Marquee
  * ------------------------------------------------------------------------- */

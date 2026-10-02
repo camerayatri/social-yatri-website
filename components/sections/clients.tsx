@@ -35,10 +35,19 @@ import TransitionLink from "@/components/transition/transition-link";
  */
 /**
  * A claim as written: one string, or lines the client's copy breaks in a set
- * place, each held whole so no width can split a figure from its unit.
+ * place, each held whole so no width can split a figure from its unit. The
+ * trailing space is invisible at the end of a block, and keeps the heading's
+ * text from reading "From 12K to4.1 lakh+" to anything that reads the text.
  */
 const claimLines = (claim: string | readonly string[]) =>
-  typeof claim === "string" ? claim : claim.map((line) => <span key={line} className="block">{line}</span>);
+  typeof claim === "string"
+    ? claim
+    : claim.map((line, i) => (
+        <span key={line} className="block">
+          {line}
+          {i < claim.length - 1 ? " " : null}
+        </span>
+      ));
 
 export default function Clients({
   surface = "ink",

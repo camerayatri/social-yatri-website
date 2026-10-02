@@ -20,6 +20,8 @@ type Props = {
   start?: string;
   /** Play immediately on mount instead of waiting for the scroll position. */
   immediate?: boolean;
+  /** The language of the copy, where it is not the page's English. */
+  lang?: string;
 };
 
 /**
@@ -43,6 +45,7 @@ export default function Reveal({
   stagger = 0.08,
   start = "top 85%",
   immediate = false,
+  lang,
 }: Props) {
   const root = useRef<HTMLElement>(null);
   // Nothing reveals under the intro panel or under a page cover: the build
@@ -78,7 +81,24 @@ export default function Reveal({
           // delimiter also matches a non-breaking space, which turned
           // "4.1\u00a0lakh+" into two words and let the figure break from
           // its unit; a no-break space has to mean no break.
-          split = new SplitText(el, { type: "lines", mask: "lines", wordDelimiter: " " });
+          /*
+           * `aria: "none"` and span lines, because the defaults broke the
+           * markup. By default SplitText copies the text into an `aria-label`
+           * on the element and hides every line, and an aria-label is not
+           * allowed on a <p>; and it wraps lines in <div>s, which cannot sit
+           * inside an <h1> or a <p>. With spans and no aria the lines are
+           * read as the text they are. They are made blocks in CSS
+           * (`.reveal-line`), since a span line no longer gets SplitText's
+           * inline `display: block`.
+           */
+          split = new SplitText(el, {
+            type: "lines",
+            mask: "lines",
+            wordDelimiter: " ",
+            aria: "none",
+            tag: "span",
+            linesClass: "reveal-line",
+          });
           targets = split.lines;
 
           // A mask is sized to its line's box, which sits on the baseline, so
@@ -166,7 +186,7 @@ export default function Reveal({
   );
 
   return (
-    <Tag ref={root} data-reveal className={className} style={style}>
+    <Tag ref={root} data-reveal className={className} style={style} lang={lang}>
       {children}
     </Tag>
   );
