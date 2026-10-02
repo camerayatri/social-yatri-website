@@ -97,7 +97,11 @@ export default async function ContactPage() {
                     <a
                       key={entry.label}
                       href={entry.href ?? undefined}
-                      {...(external ? { target: "_blank", rel: "noreferrer" } : null)}
+                      // Both words, though `noreferrer` implies `noopener` in
+                      // every current browser: older in-app browsers (the
+                      // ones Instagram and Facebook open links in) honour
+                      // only the one they know.
+                      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : null)}
                       className="rule hover:text-accent group flex items-baseline justify-between gap-[1.5em] border-b py-[0.9em] text-[1.0625em] opacity-80 transition-[opacity,padding,color] duration-300 hover:pl-[0.5em] hover:opacity-100 max-mobile:gap-[1em]"
                     >
                       <span>{entry.value}</span>
