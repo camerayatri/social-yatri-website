@@ -1,6 +1,7 @@
 import Image from "next/image";
 
 import type { Photo } from "@/lib/content";
+import Veil from "./veil";
 
 /**
  * The frame that carries a piece of work.
@@ -35,6 +36,7 @@ export default function Poster({
           objectPosition: photo.focus,
         }}
       />
+      <Veil key={photo.src} src={photo.src} />
     </div>
   );
 }

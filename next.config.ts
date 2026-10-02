@@ -14,6 +14,58 @@ import type { NextConfig } from "next";
  */
 const PUBLIC_MEDIA_CACHE = "public, max-age=604800, stale-while-revalidate=86400";
 
+/** The Blob store the client's media is served from (see `lib/media.ts`). */
+const MEDIA_STORE = "https://7fbuzjgryviydeeh.public.blob.vercel-storage.com";
+
+/**
+ * Sent with every response. Vercel adds Strict-Transport-Security itself.
+ *
+ * - nosniff: a file is only ever run or styled as the type it was served as.
+ * - strict-origin-when-cross-origin: another site the reader follows a link
+ *   to (the Maps link, Instagram) learns the reader came from this domain,
+ *   never which page.
+ * - Permissions-Policy: the site uses none of these, so nothing embedded in
+ *   it can ask for them either.
+ *
+ * The admin sends stricter values of its own from `proxy.ts` (no referrer at
+ * all, no framing, no caching). Those are set on the response after these,
+ * so on admin routes the admin's win; checked with `next start`.
+ */
+const SECURITY_HEADERS = [
+  { key: "X-Content-Type-Options", value: "nosniff" },
+  { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+  {
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()",
+  },
+  /*
+   * A Content Security Policy, in report-only form: browsers check every
+   * page against it and print what it would have blocked in the console, and
+   * block nothing. It is not enforced yet because the pages are static, which
+   * rules out per-request nonces, so Next's inline bootstrap scripts need
+   * 'unsafe-inline'; and because Vercel's preview toolbar loads scripts of its
+   * own on preview deployments. Checked clean on every public page under
+   * `next start`. To enforce it, rename the header once a production
+   * deployment has run a while with no reports.
+   */
+  {
+    key: "Content-Security-Policy-Report-Only",
+    value: [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline'",
+      "style-src 'self' 'unsafe-inline'",
+      `img-src 'self' data: blob: ${MEDIA_STORE}`,
+      `media-src 'self' blob: ${MEDIA_STORE}`,
+      "font-src 'self'",
+      "connect-src 'self' https://*.public.blob.vercel-storage.com https://blob.vercel-storage.com https://vercel.com",
+      "frame-ancestors 'self'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+    ].join("; "),
+  },
+];
+
 const nextConfig: NextConfig = {
   images: {
     /*
@@ -39,10 +91,32 @@ const nextConfig: NextConfig = {
      * default, was work for nothing.
      */
     minimumCacheTTL: 2678400,
+    /*
+     * The widths the optimizer will make, cut to the ones the site asks for.
+     *
+     * Every allowed width is a variant anyone can request for any image, and
+     * on the Hobby plan each variant made is one of 5,000 transformations a
+     * month. With Next's sixteen widths and two formats the ceiling was
+     * 180 seeded stills x 16 x 2 = 5,760, over the allowance before a single
+     * upload. A crawl of every public page on seven devices (three phones, a
+     * tablet, 1x and 2x laptops, a 1080p desktop) asked for 256, 384, 640,
+     * 750, 828, 1080, 1200 and 1920 and nothing else; 2048 stays for the
+     * full-screen viewer on a 2x screen, and 16 for the placeholder of an
+     * uploaded still (`placeholderStyle`). 3840 is gone because no source is
+     * wider than 2000px, so it only ever produced the 2048 file again, and
+     * 32 to 128 were never chosen. Ten widths: a ceiling of 3,600 for the
+     * seeded media, against about 650 variants that real visits make.
+     */
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+    imageSizes: [16, 256, 384],
   },
+
+  // Says nothing a visitor needs, and names the framework to anyone probing.
+  poweredByHeader: false,
 
   async headers() {
     return [
+      { source: "/:path*", headers: SECURITY_HEADERS },
       {
         source: "/video/:path*",
         headers: [{ key: "Cache-Control", value: PUBLIC_MEDIA_CACHE }],

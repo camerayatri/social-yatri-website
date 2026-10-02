@@ -5,7 +5,9 @@ import Image from "next/image";
 
 import type { Photo } from "@/lib/content";
 import type { Reel } from "@/lib/reels";
-import { claimPlayback } from "@/lib/solo-video";
+import { pauseClip, playClip, useClip } from "@/lib/clip";
+import Buffering from "./buffering";
+import Veil from "./veil";
 
 /**
  * A category's cover on the work wall.
@@ -23,9 +25,12 @@ import { claimPlayback } from "@/lib/solo-video";
  * decoration on a link: hovering plays it, the keyboard gets the link, and the
  * clip itself is never the only way to reach anything.
  *
- * Sound is left off. On `Reel` the sound rides the hover because the clip is
- * the thing being looked at; here six covers share a screen and any one of
- * them could be crossed on the way to another.
+ * Sound is left off: there is no switch here, six covers share a screen and
+ * any one of them could be crossed on the way to another. So the clip is the
+ * reel's silent preview where it has one (`lib/clip.ts`), a fraction of the
+ * full file, and it is let go when the card leaves the screen.
+ *
+ * While the still is loading, the veil holds its colours in the frame.
  */
 export default function WorkCard({
   cover,
@@ -37,29 +42,33 @@ export default function WorkCard({
   preload?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
+  const stalled = useClip(ref, cover.reel?.src ?? "");
 
-  const onEnter = useCallback(() => {
+  /*
+   * A mouse or a pen only. A tap is the link's click, which turns the page
+   * over; starting the clip under the finger on the way would only fetch it.
+   */
+  const onEnter = useCallback((event: React.PointerEvent) => {
+    if (event.pointerType === "touch") return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    if (ref.current) claimPlayback(ref.current);
-    void ref.current?.play().catch(() => {
-      /* nothing decoded: the still is already showing and stays. */
-    });
+    if (ref.current) void playClip(ref.current, false);
   }, []);
 
-  const onLeave = useCallback(() => {
+  const onLeave = useCallback((event: React.PointerEvent) => {
+    if (event.pointerType === "touch") return;
     const video = ref.current;
     if (!video) return;
-    video.pause();
+    pauseClip(video);
     // Back to the first frame, so the next hover starts where the still did
     // rather than part-way through.
-    video.currentTime = 0;
+    if (video.hasAttribute("src")) video.currentTime = 0;
   }, []);
 
   return (
     <div
       className="absolute inset-0 overflow-hidden"
-      onMouseEnter={cover.reel ? onEnter : undefined}
-      onMouseLeave={cover.reel ? onLeave : undefined}
+      onPointerEnter={cover.reel ? onEnter : undefined}
+      onPointerLeave={cover.reel ? onLeave : undefined}
     >
       <Image
         src={cover.src}
@@ -73,6 +82,7 @@ export default function WorkCard({
           objectPosition: cover.focus,
         }}
       />
+      <Veil key={cover.src} src={cover.src} />
 
       {cover.reel ? (
         <>
@@ -84,9 +94,7 @@ export default function WorkCard({
             preload="none"
             aria-hidden
             className="absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-          >
-            <source src={cover.reel.src} type="video/mp4" />
-          </video>
+          />
 
           {/* Says the card is footage before anyone points at it. */}
           <span
@@ -98,6 +106,7 @@ export default function WorkCard({
             </span>
             Play
           </span>
+          <Buffering show={stalled} />
         </>
       ) : null}
     </div>

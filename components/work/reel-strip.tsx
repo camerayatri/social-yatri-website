@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Reel from "./reel";
 import type { Reel as ReelData } from "@/lib/reels";
 import { useMediaViewer, type ViewerItem } from "@/components/effects/media-viewer";
+import { setClipSound } from "@/lib/clip";
 
 /**
  * Cards whose poster is in the server's markup: enough to fill the first
@@ -22,11 +23,12 @@ const POSTERS_UP_FRONT = 6;
  * It borrows the shoot carousel's track so the scrolling, snapping and gutter
  * behave identically; with only a handful of clips it simply does not overflow.
  *
- * Sound rides the hover. Nothing plays or makes a noise on its own, but a clip
- * you point at comes up with its audio, because these were cut for a feed and
- * half of them are somebody talking. The switch in the corner is there for
- * anyone who would rather watch them silently, and it is the only thing on the
- * strip that persists between clips.
+ * Nothing plays or makes a noise on its own. A clip you point at plays
+ * silently (its light preview, see `lib/clip.ts`) until the switch in the
+ * corner is turned on; from then on each one comes up with its audio, from the
+ * full file, because these were cut for a feed and half of them are somebody
+ * talking. The switch is the only thing on the strip that persists between
+ * clips.
  *
  * A click opens the clip full screen, with the rest of the strip to move
  * through: a card this size is a thumbnail of something cut to fill a phone.
@@ -88,15 +90,14 @@ export default function ReelStrip({
 
   /*
    * Applied straight to the elements as well as to the ref, so a clip that is
-   * already running changes at once instead of at its next play.
+   * already running changes at once instead of at its next play: one playing
+   * its silent preview moves to the full file at the same moment, with sound.
    */
   const toggle = useCallback(() => {
     const on = !soundRef.current;
     soundRef.current = on;
     setSound(on);
-    trackRef.current?.querySelectorAll("video").forEach((video) => {
-      video.muted = !on;
-    });
+    trackRef.current?.querySelectorAll("video").forEach((video) => setClipSound(video, on));
   }, []);
 
   const openAt = useCallback(
@@ -154,6 +155,7 @@ export default function ReelStrip({
               reel={reel}
               soundRef={soundRef}
               showPoster={near.has(i)}
+              eager={i < POSTERS_UP_FRONT}
               onOpen={() => openAt(i)}
               className="bg-ink h-full w-auto max-w-none"
             />

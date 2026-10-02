@@ -12,6 +12,7 @@ import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_URL } from "@/lib/seo";
 import { siteGraph } from "@/lib/structured-data";
 import JsonLd from "@/components/seo/json-ld";
 import NoScriptStyles from "@/components/seo/no-script-styles";
+import Observability from "@/components/observability";
 
 /**
  * PP Neue Montreal, served locally. Only the Medium cut is licensed into this
@@ -148,6 +149,8 @@ export default async function RootLayout({
           (site) route group, so the admin can share this layout without it.
         */}
         {children}
+        {/* Page views and real-visit vitals, public pages only (it stands down in the admin). */}
+        <Observability />
       </body>
     </html>
   );

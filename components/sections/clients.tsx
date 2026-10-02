@@ -6,6 +6,7 @@ import type { ContentDocs } from "@/lib/cms/schema";
 import Reveal from "@/components/effects/reveal";
 import SectionHead from "@/components/ui/section-head";
 import TransitionLink from "@/components/transition/transition-link";
+import Veil from "@/components/work/veil";
 
 /**
  * The client results.
@@ -180,6 +181,7 @@ export default function Clients({
                   className="object-cover"
                   style={{ objectPosition: study.focus }}
                 />
+                <Veil key={study.frame} src={study.frame} />
               </div>
             </div>
 
