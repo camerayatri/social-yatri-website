@@ -6,6 +6,8 @@ import { Marker } from "@/components/ui/section-head";
 import Reveal from "@/components/effects/reveal";
 import ContactForm from "@/components/sections/contact-form";
 import { Icon } from "@/components/ui/icons";
+import JsonLd from "@/components/seo/json-ld";
+import { contactPage } from "./structured-data";
 
 /*
  * The whole point of the page, in the snippet: somebody searching for the
@@ -13,14 +15,31 @@ import { Icon } from "@/components/ui/icons";
  * the content, so a new number saved in the admin is the number in the
  * snippet too.
  */
+const TITLE = "Contact a Social Media Agency in Kolkata";
+const describe = (site: { name: string; address: string; phone: string; email: string }, question: string) =>
+  `Visit ${site.name} at ${site.address}, call ${site.phone} or email ${site.email}. ${question}`;
+
 export async function generateMetadata(): Promise<Metadata> {
   const { site, connect } = await getContent();
   return {
-    title: "Contact a Social Media Agency in Kolkata",
-    description: `Visit ${site.name} at ${site.address}, call ${site.phone} or email ${site.email}. ${connect.question}`,
+    title: TITLE,
+    description: describe(site, connect.question),
     alternates: { canonical: "/contact" },
   };
 }
+
+/*
+ * Without JavaScript nothing on the site would lift the opening film's panel
+ * (it is drawn by the server and taken away by the script) or uncover the
+ * revealed copy, so this page would be a still of a road. Here, where the
+ * page is how people reach the studio, a stylesheet that only a browser with
+ * scripting off applies takes both away (and shows the header's mark, which
+ * the loader would have handed over), and the form says how else to get
+ * in touch. Scoped to this page; the same two rules in the root layout would
+ * do it for the whole site.
+ */
+const NO_SCRIPT_CSS =
+  "div:has(> [data-loader-panel]){display:none!important}[data-reveal],[data-header-logo]{visibility:visible!important}";
 
 /**
  * Connect.
@@ -43,6 +62,10 @@ export default async function ContactPage() {
   const { site, connect } = await getContent();
   return (
     <main>
+      <noscript>
+        <style>{NO_SCRIPT_CSS}</style>
+      </noscript>
+      <JsonLd data={contactPage(site, TITLE, describe(site, connect.question))} />
       <section className="text-ink px-[var(--gutter)] pt-[calc(var(--corner)+96px)] pb-[7em]">
         {/*
           Two rows: the marker's own height, then everything else. Without the
@@ -71,7 +94,10 @@ export default async function ContactPage() {
             </Reveal>
 
             <div className="mt-[4em]">
-              <ContactForm connect={connect} />
+              <ContactForm
+                connect={connect}
+                contacts={{ email: site.email, phone: site.phone, phoneHref: site.phoneHref }}
+              />
             </div>
           </div>
 
@@ -97,7 +123,11 @@ export default async function ContactPage() {
                     <a
                       key={entry.label}
                       href={entry.href ?? undefined}
-                      {...(external ? { target: "_blank", rel: "noreferrer" } : null)}
+                      // Both words, though `noreferrer` implies `noopener` in
+                      // every current browser: older in-app browsers (the
+                      // ones Instagram and Facebook open links in) honour
+                      // only the one they know.
+                      {...(external ? { target: "_blank", rel: "noopener noreferrer" } : null)}
                       className="rule hover:text-accent group flex items-baseline justify-between gap-[1.5em] border-b py-[0.9em] text-[1.0625em] opacity-80 transition-[opacity,padding,color] duration-300 hover:pl-[0.5em] hover:opacity-100 max-mobile:gap-[1em]"
                     >
                       <span>{entry.value}</span>

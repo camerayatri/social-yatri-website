@@ -4,7 +4,8 @@ import { sql } from "./db";
 /**
  * Fixed-window counters in the `rate_limits` table.
  *
- * A bucket names what is counted (`login:email:<email>`, `login:ip:<ip>`) and
+ * A bucket names what is counted (`login:email:<email>`, `login:ip:<ip>`,
+ * `contact:ip:<hash>`) and
  * each window is fifteen minutes long by default. Counting in Postgres rather
  * than in memory is deliberate: serverless instances do not share memory, so
  * an in-process counter would give each instance its own five guesses.
@@ -38,6 +39,30 @@ export async function addHits(buckets: string[], minutes = DEFAULT_WINDOW_MINUTE
     ),
     tx.query(`DELETE FROM rate_limits WHERE window_start < now() - interval '1 day'`),
   ]);
+}
+
+/**
+ * Adds one hit to a bucket and returns its count in the current window,
+ * including this one, in a single statement.
+ *
+ * For a limit that has to hold under a burst. Counting first and adding
+ * after the work is done leaves a gap: twenty requests sent at once all read
+ * the same count, all pass, and all get through. Taking the hit first and
+ * deciding on what comes back closes it, since Postgres serialises the
+ * increments on the row. The price is that an attempt turned away still
+ * counts, which only matters to whoever keeps knocking.
+ */
+export async function takeHit(bucket: string, minutes = DEFAULT_WINDOW_MINUTES): Promise<number> {
+  const [rows] = (await sql().transaction((tx) => [
+    tx.query(
+      `INSERT INTO rate_limits (bucket, window_start, count) VALUES ($1, ${WINDOW(minutes)}, 1)
+       ON CONFLICT (bucket, window_start) DO UPDATE SET count = rate_limits.count + 1
+       RETURNING count`,
+      [bucket],
+    ),
+    tx.query(`DELETE FROM rate_limits WHERE window_start < now() - interval '1 day'`),
+  ])) as [{ count: number }[], unknown];
+  return Number(rows[0]?.count ?? 0);
 }
 
 /** Forgets a bucket's current window, used to clear an email's failures on a good sign-in. */

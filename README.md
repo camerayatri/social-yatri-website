@@ -240,16 +240,76 @@ Neon Postgres and uploads on Vercel Blob. Every variable it reads is described i
 - **Without a database** the site builds and runs on the shipped content, and the
   admin's sign-in page says it is not connected.
 
+## The contact form
+
+`/contact` posts to `submitContact` in `lib/cms/actions/contact.ts`. Every enquiry is
+stored in `contact_submissions` first and shows up in the admin's Inbox; the email to
+the studio is sent after the visitor's response has gone, so a mail problem can never
+lose an enquiry. Without `DATABASE_URL` the form cannot store anything and shows the
+studio's email and phone instead.
+
+What protects it, in order: a signed timestamp the form fetches on load and must send
+back at least three seconds old (the form waits that out and refreshes a stale one
+itself, so a person is never asked to do anything about it), a hidden honeypot field,
+the field rules, a check that drops the same enquiry sent twice within half an hour,
+and ten stored enquiries an hour per sender (an IPv4 address or an IPv6 /64). Anyone
+over the limit, or caught by any failure, keeps what they typed and is shown the email
+and phone.
+
+### Email notifications (Resend)
+
+Set all three of these in the Vercel project (Production, and Preview if you want
+preview deployments to email too); with any one missing, enquiries are only in the
+Inbox:
+
+| Variable | Value |
+| --- | --- |
+| `RESEND_API_KEY` | An API key with "Sending access", restricted to the domain below. |
+| `CONTACT_TO` | `thesocialyatri@gmail.com` (the address on the site; several may be comma separated). |
+| `CONTACT_FROM` | `Social Yatri website <enquiries@socialyatri.in>` |
+
+The sender must be on a domain verified in Resend. A Gmail address cannot be the
+sender. To verify `socialyatri.in`:
+
+1. In Resend, Domains, add `socialyatri.in`. Pick the region closest to the studio
+   (Tokyo, `ap-northeast-1`, is the nearest to India).
+2. Resend then lists the DNS records to add wherever the domain's DNS is managed
+   (the registrar, or Vercel if the nameservers point there). Copy the values from
+   Resend exactly; they look like this:
+
+   | Type | Name | Value |
+   | --- | --- | --- |
+   | MX | `send` | `feedback-smtp.<region>.amazonses.com`, priority 10 |
+   | TXT | `send` | `v=spf1 include:amazonses.com ~all` |
+   | TXT | `resend._domainkey` | the DKIM key Resend shows (`p=MIGfMA0...`) |
+   | TXT | `_dmarc` | `v=DMARC1; p=none;` (recommended; tighten later) |
+
+   They sit on the `send` subdomain and on `_domainkey`, so they do not touch the
+   domain's own MX records or any email the studio already receives.
+3. Press Verify in Resend; DNS can take from minutes to a few hours.
+4. Send one enquiry through `/contact` on the live site and check that it arrives,
+   lands in the inbox rather than spam (mark it "Not spam" once if it does not), and
+   that Reply answers the visitor: the email's Reply-To is their address.
+
+Each email carries the enquiry as plain text and simple HTML, with a subject naming
+the person, their company and what they need. Resend is tried three times for
+failures that pass (timeouts, rate limits, server errors), under one idempotency key so
+a retry can never send a duplicate. A failure that sticks, and an enquiry that could not
+be stored at all, is logged as one line starting `[contact] ALERT`: in Vercel, set a log
+alert or drain on that text. The enquiry is in the Inbox either way.
+
+Resend's free plan sends 100 emails a day and 3,000 a month, far more than enquiries
+need, but a spam wave that got past the checks could use it up; the Inbox keeps every
+enquiry regardless.
+
 ## What still needs doing
 
 - **The reel frames are placeholders**, the four architecture photographs already in
   `public/img`, cycled. Each ride names its own `frame` in `lib/content.ts`, so
   swapping in real stills is one line per ride and no component change.
-- **The social profiles have no URLs yet**, so they render as plain text (in the
-  footer and on `/contact`) rather than links that go nowhere. Put the real URLs in
-  `SITE` in `lib/content.ts` and add them to the `href` column in
-  `components/sections/contact-form.tsx` and the footer's column to turn them into
-  links.
+- **LinkedIn has no handle yet**, so its row is left out of the footer and `/contact`
+  rather than linking somewhere wrong. Fill in "LinkedIn company handle" in the admin's Site & contact page
+  (or `SITE` in `lib/content.ts`) and the row appears in both.
 - **The paper plane and the grain crawl are worth a look on a real screen**: both are
   driven by `requestAnimationFrame`/CSS animation, which a backgrounded tab suspends,
   so they cannot be verified from screenshots of an inactive tab.
