@@ -6,6 +6,8 @@ import { StickyTab, StickyTabGroup } from "@/components/effects/sticky-tabs";
 import SectionHead from "@/components/ui/section-head";
 import Reveal from "@/components/effects/reveal";
 import MarqueeStrip from "@/components/sections/marquee-strip";
+import JsonLd from "@/components/seo/json-ld";
+import { servicesList } from "@/lib/structured-data";
 
 /*
  * The standfirst ("We turn brands into stories people remember.") was the
@@ -22,6 +24,7 @@ export const metadata: Metadata = {
 export default function ServicesPage() {
   return (
     <main>
+      <JsonLd data={servicesList()} />
       <section className="text-ink px-[var(--gutter)] pt-[calc(var(--corner)+96px)] pb-[3em]">
         <SectionHead
           marker={SERVICES_INTRO.sign}

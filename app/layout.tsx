@@ -9,6 +9,8 @@ import "lenis/dist/lenis.css";
 import "./globals.css";
 import { SITE } from "@/lib/content";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_URL } from "@/lib/seo";
+import { siteGraph } from "@/lib/structured-data";
+import JsonLd from "@/components/seo/json-ld";
 import { LoadingProvider } from "@/components/loader";
 import TransitionProvider from "@/components/transition/transition-provider";
 import SiteHeader from "@/components/site-header";
@@ -129,6 +131,8 @@ export default function RootLayout({
         >
           Skip to content
         </a>
+        {/* Who the studio is and where, once for the whole site. */}
+        <JsonLd data={siteGraph()} />
         <SmoothScroll />
         <Cursor />
         <div className="grain" aria-hidden />

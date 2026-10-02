@@ -10,6 +10,8 @@ import Reveal from "@/components/effects/reveal";
 import BubbleButton from "@/components/effects/bubble-button";
 import TransitionLink from "@/components/transition/transition-link";
 import { Marker } from "@/components/ui/section-head";
+import JsonLd from "@/components/seo/json-ld";
+import { workBreadcrumb } from "@/lib/structured-data";
 
 type Params = { slug: string };
 
@@ -61,6 +63,7 @@ export default async function WorkPage({ params }: { params: Promise<Params> }) 
 
   return (
     <main className="text-ink">
+      <JsonLd data={workBreadcrumb(work)} />
       <section className="px-[var(--gutter)] pt-[calc(var(--corner)+96px)] pb-[3em]">
         <Marker>Work</Marker>
 
