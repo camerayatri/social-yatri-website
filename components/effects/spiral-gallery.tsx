@@ -1,11 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
-import Image from "next/image";
 import { useGSAP } from "@gsap/react";
 
 import type { ShowreelClip } from "@/lib/reels";
 import { gsap } from "@/lib/gsap";
+import { posterSrc } from "@/lib/media";
 import { useMediaViewer, type ViewerItem } from "@/components/effects/media-viewer";
 import { claimPlayback } from "@/lib/solo-video";
 
@@ -287,6 +287,23 @@ function ShowreelCard({
    */
   const [playing, setPlaying] = useState(false);
 
+  /*
+   * The cover and the video's poster are one file. The poster is handed the
+   * cover's URL once the cover has loaded, so the browser already has it;
+   * set on the element rather than rendered, because a `poster` in the markup
+   * is fetched the moment the video exists, lazy cover or not. The effect
+   * catches a cover that finished before hydration, whose load event fired
+   * with nobody listening.
+   */
+  const cover = posterSrc(clip.poster);
+  const coverRef = useRef<HTMLImageElement>(null);
+  const lendPoster = useCallback(() => {
+    if (video.current) video.current.poster = cover;
+  }, [cover]);
+  useEffect(() => {
+    if (coverRef.current?.complete && coverRef.current.naturalWidth) lendPoster();
+  }, [lendPoster]);
+
   const reduced = useSyncExternalStore(
     useCallback((notify: () => void) => {
       const query = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -376,7 +393,6 @@ function ShowreelCard({
       >
         <video
           ref={video}
-          poster={clip.poster}
           muted
           loop
           playsInline
@@ -396,17 +412,33 @@ function ShowreelCard({
          * frame has played, so a card that had been hovered would otherwise
          * drift round the helix showing whichever frame it stopped on, beside
          * eight designed covers. This one fades once the footage is painting
-         * and returns when the clip pauses. Served as the file it is: the
-         * optimizer would re-encode artwork with type and yellow gradients
-         * baked in, and 720px already covers a 300px card at 2x.
+         * and returns when the clip pauses.
+         *
+         * Through the optimizer, as one fixed file rather than a srcset: the
+         * 720 frame at quality 75, which covers a 300px card at 2x and a
+         * phone's 40vw card at 3x, and comes back as AVIF at roughly half the
+         * JPEG. One URL because the video's poster is the same picture, and a
+         * srcset would let the two pick different files and fetch both. The
+         * poster is only pointed at it once it is here (see the effect
+         * above), so it is a cache hit, never a second request, and never
+         * the thing that pulls a lazy card's cover in early.
+         *
+         * Only the front card loads at once, at high priority, with the next
+         * one in line behind it; the rest wait for the browser's lazy loading.
+         * All nine used to be fetched eagerly while the opening film, which is
+         * the only thing on screen at that point, was still loading.
          */}
-        <Image
-          src={clip.poster}
+        {/* eslint-disable-next-line @next/next/no-img-element -- the src is already the optimizer's URL, from getImageProps; next/image would wrap it again. */}
+        <img
+          ref={coverRef}
+          src={cover}
           alt=""
           width={clip.w}
           height={clip.h}
-          unoptimized
-          loading="eager"
+          loading={index < 2 ? "eager" : "lazy"}
+          fetchPriority={index === 0 ? "high" : "auto"}
+          decoding="async"
+          onLoad={lendPoster}
           draggable={false}
           aria-hidden
           className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${playing ? "opacity-0" : "opacity-100"}`}
