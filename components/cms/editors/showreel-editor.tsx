@@ -14,7 +14,7 @@ import { Button } from "../ui";
  *
  * The spiral is laid out for six to twelve cards, so the count is shown as
  * it changes and Save is off, with the reason beside it, whenever the list is
- * outside that range or a clip is missing its title or alt text. Clips come
+ * outside that range or a clip is missing its title or description. Clips come
  * from the media library (or are uploaded from the same dialog); removing
  * one leaves the file in the library.
  */
@@ -59,7 +59,7 @@ function ShowreelFields({ form, durations }: { form: EditorFormApi<Clips>; durat
         : noTitle.length
           ? `give ${list(noTitle)} a title.`
           : noAlt.length
-            ? `write alt text for ${list(noAlt)}.`
+            ? `describe ${list(noAlt)}.`
             : null;
 
   return (

@@ -6,6 +6,7 @@ import { media } from "@/lib/media";
 import { Button } from "../ui";
 import { Duration, Thumb } from "./media-thumb";
 import { SortableGrid, moveItem, occurrenceKeys } from "./sortable-grid";
+import { DESCRIBE, DESCRIBE_MISSING } from "./describe";
 import { TextArea } from "./text-area";
 import { TextField } from "./text-field";
 
@@ -129,11 +130,12 @@ export function ReelGrid<T extends ReelLike>({
               />
             ) : null}
             <TextArea
-              label="Alt text"
+              label={DESCRIBE.video.label}
               required
               rows={2}
               value={item.alt}
-              error={errorAt(i, "alt") ?? (item.alt.trim() ? undefined : "Needs alt text before saving.")}
+              error={errorAt(i, "alt") ?? (item.alt.trim() ? undefined : DESCRIBE_MISSING)}
+              hint={DESCRIBE.video.hint}
               onChange={(alt) => onChange(items.map((it, j) => (j === i ? { ...it, alt } : it)))}
             />
           </>

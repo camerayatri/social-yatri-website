@@ -27,7 +27,7 @@ import { slugify } from "./works-editor";
  * taken out. Only one set is open at a time, so a page with a hundred and
  * more photographs stays quick.
  *
- * Every photograph needs alt text before the sets can be saved; the missing
+ * Every photograph needs a description before the sets can be saved; the missing
  * ones are listed at the top, each a button that opens its set and puts the
  * cursor in the right box. A set a work category links to can't be removed
  * until the category is pointed elsewhere, since the category's page shows it.
@@ -112,7 +112,7 @@ function ShootFields({ form, links }: { form: EditorFormApi<Shoots>; links: Reco
   const total = doc.order.reduce((n, key) => n + photosOf(key).length, 0);
 
   const reason = missing.length
-    ? `add alt text to ${missing.length === 1 ? "1 photo" : `${missing.length} photos`} (listed at the top).`
+    ? `describe ${missing.length === 1 ? "1 photo" : `${missing.length} photos`} (listed at the top).`
     : empty.length
       ? `“${doc.gallery[empty[0]]?.label || empty[0]}” has no photographs. Add some, or remove the set.`
       : unnamed.length

@@ -34,7 +34,7 @@ const registerInput = z.object({
   w: z.number().int().positive().max(20000).nullish(),
   h: z.number().int().positive().max(20000).nullish(),
   duration: z.number().nonnegative().max(60 * 60).nullish(),
-  alt: z.string().trim().min(1, "Describe what's in it: alt text is required.").max(500),
+  alt: z.string().trim().min(1, "Describe what's in it: a description is required.").max(500),
 });
 
 export async function registerUpload(input: unknown): Promise<{ ok: true; item: MediaItem } | { error: string }> {
@@ -102,8 +102,8 @@ export async function mediaUsage(id: string): Promise<Reference[] | { error: str
 export async function updateMediaAlt(id: string, alt: string): Promise<{ ok: true; item: MediaItem } | { error: string }> {
   const me = await requireMaintainer();
   const clean = String(alt ?? "").trim();
-  if (!clean) return { error: "Alt text can't be empty." };
-  if (clean.length > 500) return { error: "Keep alt text under 500 characters." };
+  if (!clean) return { error: "The description can't be empty." };
+  if (clean.length > 500) return { error: "Keep the description under 500 characters." };
   const item = await updateMediaDetails(String(id), { alt: clean }, { id: me.id, email: me.email });
   return item ? { ok: true, item } : { error: "That file is no longer in the library." };
 }

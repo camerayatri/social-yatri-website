@@ -309,7 +309,7 @@ function ClipFields({
       {form.error([]) ? <p className="text-[13px] text-[#a3271b]">{form.error([])}</p> : null}
       {missingAlt.length ? (
         <BlockSave
-          reason={`write alt text for clip${missingAlt.length === 1 ? "" : "s"} ${missingAlt.join(", ")}. It describes the clip for people who can't watch it.`}
+          reason={`describe clip${missingAlt.length === 1 ? "" : "s"} ${missingAlt.join(", ")}. The description is read aloud to blind visitors and used by Google.`}
         />
       ) : null}
       {picking ? (

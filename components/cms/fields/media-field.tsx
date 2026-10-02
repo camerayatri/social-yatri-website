@@ -6,17 +6,18 @@ import type { MediaItem, MediaKind } from "@/lib/cms/media";
 import { MediaGrid } from "../media/media-grid";
 import { Uploader } from "../media/uploader";
 import { Button } from "../ui";
+import { DESCRIBE } from "./describe";
 import { TextArea } from "./text-area";
 
 /**
  * A slot for one image or video.
  *
- * Shows what is there now with its alt text, and a button that opens the
- * library to pick something else or upload something new. Picking hands back
- * a `MediaValue`; the editor maps it onto its own shape (a Photo takes
- * src/alt/w/h, a Reel also takes the poster). The alt text is copied from the
- * library and can be changed here, because the same picture can need a
- * different description in a different place.
+ * Shows what is there now with its description (the alt text), and a button
+ * that opens the library to pick something else or upload something new.
+ * Picking hands back a `MediaValue`; the editor maps it onto its own shape (a
+ * Photo takes src/alt/w/h, a Reel also takes the poster). The description is
+ * copied from the library and can be changed here, because the same picture
+ * can need a different description in a different place.
  *
  * Give `aspect` (width / height) when the slot is cut to a shape; a pick more
  * than 2% off it is flagged, since the page will crop it.
@@ -38,10 +39,10 @@ export type MediaFieldProps = {
   onChange: (value: MediaValue) => void;
   aspect?: number;
   error?: string;
-  /** Error for the alt text specifically. */
+  /** Error for the description (alt text) specifically. */
   altError?: string;
   hint?: ReactNode;
-  /** Hide the inline alt text box (when the editor shows alt elsewhere). */
+  /** Hide the inline description box (when the editor shows it elsewhere). */
   hideAlt?: boolean;
 };
 
@@ -96,7 +97,8 @@ export function MediaField({ label, kind, value, onChange, aspect, error, altErr
       {error ? <p className="text-[13px] text-[#a3271b]">{error}</p> : hint ? <p className="text-[13px] opacity-60">{hint}</p> : null}
       {value && !hideAlt ? (
         <TextArea
-          label="Alt text here"
+          label={DESCRIBE[kind].label}
+          hint={DESCRIBE[kind].hint}
           value={value.alt}
           rows={2}
           error={altError}
