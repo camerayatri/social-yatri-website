@@ -14,12 +14,12 @@ export default function Poster({
   photo,
   className,
   sizes = "(max-width: 768px) 100vw, 33vw",
-  priority = false,
+  preload = false,
 }: {
   photo: Photo;
   className?: string;
   sizes?: string;
-  priority?: boolean;
+  preload?: boolean;
 }) {
   return (
     <div className={`absolute inset-0 overflow-hidden ${className ?? ""}`}>
@@ -28,7 +28,7 @@ export default function Poster({
         alt={photo.alt}
         fill
         sizes={sizes}
-        priority={priority}
+        preload={preload}
         className="object-cover transition-transform duration-[900ms] group-hover:scale-[1.03]"
         style={{
           transitionTimingFunction: "var(--ease-brand)",

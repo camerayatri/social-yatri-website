@@ -30,11 +30,11 @@ import { claimPlayback } from "@/lib/solo-video";
 export default function WorkCard({
   cover,
   sizes = "(max-width: 768px) 100vw, 33vw",
-  priority = false,
+  preload = false,
 }: {
   cover: Photo & { reel?: Reel };
   sizes?: string;
-  priority?: boolean;
+  preload?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
 
@@ -66,7 +66,7 @@ export default function WorkCard({
         alt={cover.alt}
         fill
         sizes={sizes}
-        priority={priority}
+        preload={preload}
         className="object-cover transition-transform duration-[900ms] group-hover:scale-[1.03]"
         style={{
           transitionTimingFunction: "var(--ease-brand)",
