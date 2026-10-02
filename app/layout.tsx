@@ -11,6 +11,7 @@ import { getContent } from "@/lib/cms/get-content";
 import { DEFAULT_DESCRIPTION, DEFAULT_TITLE, SITE_URL } from "@/lib/seo";
 import { siteGraph } from "@/lib/structured-data";
 import JsonLd from "@/components/seo/json-ld";
+import NoScriptStyles from "@/components/seo/no-script-styles";
 
 /**
  * PP Neue Montreal, served locally. Only the Medium cut is licensed into this
@@ -127,6 +128,8 @@ export default async function RootLayout({
       <body className="bg-paper text-ink font-sans text-[length:var(--size-font)] leading-[1.4] font-medium antialiased">
         {/* Who the studio is and where, once for the whole site. */}
         <JsonLd data={siteGraph(site, services)} />
+        {/* The copy, shown as it is to anything that reads the page without running it. */}
+        <NoScriptStyles />
         {/*
           The site's chrome (loader, Lenis, cursor, grain, transition, header
           and footer) lives in components/site-shell.tsx, applied by the
