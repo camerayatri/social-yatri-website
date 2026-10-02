@@ -11,6 +11,9 @@ import { useAdmin } from "./admin-context";
  * The admin's menu: a sidebar on wide screens, a bar with a drop-down on
  * phones. Paths are relative to the admin base, which arrives through context
  * because only the server knows it. New editors add a row to `SECTIONS`.
+ *
+ * `counts` puts a small number beside a row, by its href: the inbox's
+ * unopened enquiries. The server layout counts them on each page.
  */
 
 export const SECTIONS: { group: string; items: { href: string; label: string }[] }[] = [
@@ -39,7 +42,15 @@ export const SECTIONS: { group: string; items: { href: string; label: string }[]
   },
 ];
 
-export default function AdminNav({ name, email }: { name: string; email: string }) {
+export default function AdminNav({
+  name,
+  email,
+  counts = {},
+}: {
+  name: string;
+  email: string;
+  counts?: Partial<Record<string, number>>;
+}) {
   const { base } = useAdmin();
   const pathname = usePathname();
   // Remembers the page the menu was opened on, so navigating closes it.
@@ -61,16 +72,23 @@ export default function AdminNav({ name, email }: { name: string; email: string 
           {section.group ? <p className="cms-label mb-1 px-3 opacity-45">{section.group}</p> : null}
           {section.items.map((item) => {
             const active = isActive(item.href);
+            const count = counts[item.href] ?? 0;
             return (
               <Link
                 key={item.href}
                 href={item.href ? `${base}/${item.href}` : base}
                 aria-current={active ? "page" : undefined}
-                className={`rounded-[8px] px-3 py-2 text-[15px] transition-colors ${
+                className={`flex items-center justify-between gap-2 rounded-[8px] px-3 py-2 text-[15px] transition-colors ${
                   active ? "bg-ink text-paper" : "hover:bg-ink/6"
                 }`}
               >
                 {item.label}
+                {count > 0 ? (
+                  <span className="bg-accent text-ink min-w-[22px] rounded-full px-1.5 text-center text-[12px] leading-[20px] tabular-nums">
+                    {count > 99 ? "99+" : count}
+                    <span className="sr-only"> new</span>
+                  </span>
+                ) : null}
               </Link>
             );
           })}

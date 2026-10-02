@@ -114,6 +114,16 @@ export async function countSubmissions(): Promise<Record<SubmissionStatus, numbe
   return out;
 }
 
+/**
+ * How many submissions nobody has opened yet, for the badge on the menu. One
+ * count over a small table on each admin page; the menu re-reads it whenever
+ * the inbox refreshes the page.
+ */
+export async function countNewSubmissions(): Promise<number> {
+  const rows = (await sql().query(`SELECT count(*)::int AS n FROM contact_submissions WHERE status = 'new'`)) as { n: number }[];
+  return Number(rows[0]?.n ?? 0);
+}
+
 export async function getSubmission(id: number): Promise<Submission | null> {
   if (!Number.isSafeInteger(id) || id < 1) return null;
   const rows = (await sql().query(`SELECT ${COLUMNS} FROM contact_submissions WHERE id = $1`, [id])) as Row[];
