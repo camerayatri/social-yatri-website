@@ -17,6 +17,7 @@
  * Safe to run again. A file whose blob already exists at the same size is
  * skipped, so a second run uploads only what changed. Same-size edits are
  * the one thing that check misses; pass `--force` to upload everything.
+ * `--limit N` stops after the first N files.
  *
  *   BLOB_READ_WRITE_TOKEN=... node scripts/upload-media.mjs [--force] [--dry-run]
  *
@@ -86,7 +87,9 @@ async function uploadOne(sitePath) {
   }
   if (dryRun) return { sitePath, status: "would upload", size };
 
-  await put(pathname, createReadStream(local), {
+  // A buffer, not a stream: every file here is a few megabytes, and a
+  // streamed body stalled the request indefinitely in testing.
+  await put(pathname, size > MULTIPART_OVER ? createReadStream(local) : await readFile(local), {
     access: "public",
     addRandomSuffix: false,
     allowOverwrite: true,
@@ -97,8 +100,11 @@ async function uploadOne(sitePath) {
   return { sitePath, status: "uploaded", size };
 }
 
-const paths = await referencedPaths();
-console.log(`${paths.length} files named in ${SOURCES.join(", ")}`);
+const limitAt = process.argv.indexOf("--limit");
+const all = await referencedPaths();
+// `--limit N` takes the first N, for trying the script against the store.
+const paths = limitAt === -1 ? all : all.slice(0, Number(process.argv[limitAt + 1]));
+console.log(`${all.length} files named in ${SOURCES.join(", ")}`);
 
 const results = [];
 let next = 0;
@@ -112,10 +118,8 @@ async function worker() {
       result = { sitePath, status: "failed", error: error instanceof Error ? error.message : String(error) };
     }
     results.push(result);
-    if (result.status !== "skipped") {
-      const extra = result.error ? ` (${result.error})` : "";
-      console.log(`  ${result.status.padEnd(12)} ${sitePath}${extra}`);
-    }
+    const extra = result.error ? ` (${result.error})` : "";
+    console.log(`  ${result.status.padEnd(12)} ${sitePath}${extra}`);
   }
 }
 await Promise.all(Array.from({ length: CONCURRENCY }, worker));
