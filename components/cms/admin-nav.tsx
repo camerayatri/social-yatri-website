@@ -15,8 +15,21 @@ import { useAdmin } from "./admin-context";
 
 export const SECTIONS: { group: string; items: { href: string; label: string }[] }[] = [
   { group: "", items: [{ href: "", label: "Dashboard" }] },
-  { group: "Content", items: [{ href: "site", label: "Site & contact" }] },
+  {
+    group: "Content",
+    items: [
+      { href: "site", label: "Site & contact" },
+      { href: "home", label: "Home page" },
+      { href: "services", label: "Services" },
+      { href: "work", label: "Work & reels" },
+      { href: "showreel", label: "Showreel" },
+      { href: "photoshoot", label: "Photoshoots" },
+      { href: "clients", label: "Clients" },
+      { href: "studio", label: "Studio" },
+    ],
+  },
   { group: "Library", items: [{ href: "media", label: "Media" }] },
+  { group: "Enquiries", items: [{ href: "inbox", label: "Inbox" }] },
   {
     group: "Team",
     items: [
