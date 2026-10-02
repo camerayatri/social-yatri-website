@@ -14,6 +14,10 @@ import { Button } from "../ui";
  *
  * `renderItem` draws one entry's fields and gets an `update` for that entry.
  * Give `newItem` to allow adding, `min`/`max` to bound the length.
+ *
+ * Each entry is keyed by an id that lives only here, never in the document,
+ * so whatever an entry holds on screen (a section folded open, a half-typed
+ * box) moves with it when it is moved, rather than staying in the slot.
  */
 export type SortableListProps<T> = {
   label?: ReactNode;
@@ -32,6 +36,40 @@ export type SortableListProps<T> = {
   itemError?: (index: number) => string | undefined;
 };
 
+let lastId = 0;
+const nextId = () => `item-${++lastId}`;
+
+/**
+ * Ids that follow the entries through moves, removals and additions.
+ *
+ * Moving or removing keeps each entry's value as it was (the same object), so
+ * a new list is matched against the last one by identity first. An entry
+ * edited in place is a new object at the same position, and keeps the id of
+ * the one it replaced; anything else is new and gets a new id.
+ */
+function useStableIds<T>(items: T[]) {
+  const [track, setTrack] = useState(() => ({ items, ids: items.map(nextId) }));
+  if (track.items === items) return track.ids;
+
+  const old = track.items;
+  const used = new Set<number>();
+  const take = (j: number) => (used.add(j), track.ids[j]);
+  // Unchanged in place first, so typing a line that happens to equal another
+  // line's text never trades their ids; then whatever moved; then the rest.
+  const ids: (string | undefined)[] = items.map((item, i) => (i < old.length && old[i] === item ? take(i) : undefined));
+  ids.forEach((id, i) => {
+    if (id) return;
+    const j = old.findIndex((o, k) => !used.has(k) && o === items[i]);
+    if (j !== -1) ids[i] = take(j);
+  });
+  const sameLength = items.length === old.length;
+  const settled = ids.map((id, i) => id ?? (sameLength && !used.has(i) ? take(i) : nextId()));
+  // Storing what the last render saw, the way React's docs adjust state to a
+  // changed prop: the next render then finds `items` already tracked.
+  setTrack({ items, ids: settled });
+  return settled;
+}
+
 export function SortableList<T>({
   label,
   hint,
@@ -48,6 +86,7 @@ export function SortableList<T>({
 }: SortableListProps<T>) {
   const [dragging, setDragging] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
+  const ids = useStableIds(items);
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= items.length || from === to) return;
@@ -71,7 +110,7 @@ export function SortableList<T>({
       <ol className="flex flex-col gap-2">
         {items.map((item, index) => (
           <li
-            key={index}
+            key={ids[index]}
             data-drop-target={over === index && dragging !== null && dragging !== index ? "true" : undefined}
             onDragOver={(e) => {
               if (dragging === null) return;
