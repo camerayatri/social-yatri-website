@@ -92,6 +92,18 @@ export async function generateMetadata(): Promise<Metadata> {
      * the rest; the automatic one would only restyle it.
      */
     formatDetection: { telephone: false },
+    /*
+     * Lets a results page show the site's pictures large, in Discover and in
+     * image results, rather than as the thumbnail Google falls back to when a
+     * page says nothing. The work is pictures; a thumbnail sells it short.
+     *
+     * Only the preview size. Index and follow are the defaults already, and
+     * saying them here would print "index, follow" on the 404 page beside
+     * the "noindex" Next gives it: Google takes the stricter of the two, but
+     * a page should not argue with itself. The admin sets its own robots,
+     * which replaces this one whole.
+     */
+    robots: { "max-image-preview": "large" },
     openGraph: {
       type: "website",
       locale: "en_IN",
