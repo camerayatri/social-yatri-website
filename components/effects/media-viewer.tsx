@@ -9,9 +9,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
 
 import { getLenis } from "@/components/effects/smooth-scroll";
+import { posterSrc } from "@/lib/media";
 import { claimPlayback } from "@/lib/solo-video";
 
 /**
@@ -210,6 +211,43 @@ export default function MediaViewerProvider({ children }: { children: ReactNode 
   }, [shownSrc, shownKind, shownSound]);
 
   /*
+   * The neighbours, fetched but not shown, so an arrow key lands on a decoded
+   * frame instead of a gap. Photos only: a clip is several megabytes and is
+   * not worth pulling down on the chance of a press.
+   *
+   * Detached images rather than hidden `<Image>`s. The hidden ones never
+   * loaded at all: they were lazy, and a lazy image inside `display: none`
+   * is never near the viewport, so the browser never asks for it. A detached
+   * image fetches the moment it is given a source, and given the same srcset
+   * and sizes as the frame it stands in for (from `getImageProps`, with the
+   * props the stage passes) it picks the same file the stage will, so the
+   * press finds it in the cache.
+   */
+  const items = state?.items;
+  const at = state?.index ?? 0;
+  const prefetched = useRef<HTMLImageElement[]>([]);
+  useEffect(() => {
+    if (!items || items.length < 2) return;
+    prefetched.current = [-1, 1].flatMap((offset) => {
+      const near = items[(at + offset + items.length) % items.length];
+      if (!near || near.kind !== "photo") return [];
+      const { props } = getImageProps({
+        src: near.src,
+        alt: "",
+        width: near.w,
+        height: near.h,
+        sizes: "100vw",
+      });
+      const img = new window.Image();
+      img.decoding = "async";
+      if (props.sizes) img.sizes = props.sizes;
+      if (props.srcSet) img.srcset = props.srcSet;
+      img.src = props.src;
+      return [img];
+    });
+  }, [items, at]);
+
+  /*
    * Swipe. Only a decisive, mostly-horizontal gesture counts: a vertical drag
    * is somebody trying to scroll the page they can see behind the frame, and a
    * short one is a tap that wobbled.
@@ -289,7 +327,7 @@ export default function MediaViewerProvider({ children }: { children: ReactNode 
                 key={shown.src}
                 ref={videoRef}
                 src={shown.src}
-                poster={shown.poster}
+                poster={shown.poster ? posterSrc(shown.poster) : undefined}
                 controls
                 // Not a tab stop: once focus is inside Chrome's native media
                 // controls no key event reaches the page, so Escape and the
@@ -310,7 +348,12 @@ export default function MediaViewerProvider({ children }: { children: ReactNode 
                 width={shown.w}
                 height={shown.h}
                 sizes="100vw"
-                priority
+                // Wanted now, ahead of anything else: the reader just asked
+                // for it. Not `preload`, which adds a <link> to the head and
+                // is for an image on the page as it loads, not one opened
+                // later.
+                loading="eager"
+                fetchPriority="high"
                 className="viewer__media"
               />
             )}
@@ -337,30 +380,6 @@ export default function MediaViewerProvider({ children }: { children: ReactNode 
             </>
           ) : null}
 
-          {/*
-            The neighbours, fetched but not shown, so an arrow key lands on a
-            decoded frame instead of a gap. Photos only: a clip is several
-            megabytes and is not worth pulling down on the chance of a press.
-          */}
-          <div hidden>
-            {[-1, 1].map((offset) => {
-              const near =
-                state.items[
-                  (state.index + offset + state.items.length) % state.items.length
-                ];
-              return near && near.kind === "photo" ? (
-                <Image
-                  key={`${offset}-${near.src}`}
-                  src={near.src}
-                  alt=""
-                  width={near.w}
-                  height={near.h}
-                  sizes="100vw"
-                  aria-hidden
-                />
-              ) : null;
-            })}
-          </div>
         </div>
       ) : null}
     </ViewerContext.Provider>

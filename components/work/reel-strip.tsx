@@ -1,10 +1,16 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import Reel from "./reel";
 import type { Reel as ReelData } from "@/lib/reels";
 import { useMediaViewer, type ViewerItem } from "@/components/effects/media-viewer";
+
+/**
+ * Cards whose poster is in the server's markup: enough to fill the first
+ * screen of the strip on a wide monitor, where a card is about 260px wide.
+ */
+const POSTERS_UP_FRONT = 6;
 
 /**
  * The cut, not a still of it.
@@ -42,6 +48,43 @@ export default function ReelStrip({
   // Off until asked for: nothing on the page makes a sound of its own.
   const soundRef = useRef(false);
   const [sound, setSound] = useState(false);
+
+  /*
+   * Which cards have earned their poster. The wedding strip is twenty-one
+   * clips, and every poster in the markup is fetched on load whether or not
+   * the strip is ever scrolled; that was 2.4MB before the reader had done
+   * anything. The first few, which fill the screen, are in the server's
+   * markup as before. The rest are given theirs as they come within a
+   * track's width of the visible part of the strip, and keep it once they
+   * have it. The observer's root is the track itself, because the track
+   * clips its own overflow and a margin on the viewport would never reach a
+   * card hidden off its right edge.
+   */
+  const [near, setNear] = useState<ReadonlySet<number>>(
+    () => new Set(reels.slice(0, POSTERS_UP_FRONT).map((_, i) => i)),
+  );
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const slides = Array.from(track.children);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const hits = entries
+          .filter((entry) => entry.isIntersecting)
+          .map((entry) => slides.indexOf(entry.target));
+        if (!hits.length) return;
+        setNear((prev) => {
+          if (hits.every((i) => prev.has(i))) return prev;
+          const next = new Set(prev);
+          hits.forEach((i) => next.add(i));
+          return next;
+        });
+      },
+      { root: track, rootMargin: "0px 100%" },
+    );
+    slides.forEach((slide) => observer.observe(slide));
+    return () => observer.disconnect();
+  }, [reels]);
 
   /*
    * Applied straight to the elements as well as to the ref, so a clip that is
@@ -110,6 +153,7 @@ export default function ReelStrip({
             <Reel
               reel={reel}
               soundRef={soundRef}
+              showPoster={near.has(i)}
               onOpen={() => openAt(i)}
               className="bg-ink h-full w-auto max-w-none"
             />

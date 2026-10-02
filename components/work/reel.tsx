@@ -9,6 +9,7 @@ import {
 } from "react";
 
 import type { Reel as ReelData } from "@/lib/reels";
+import { posterSrc } from "@/lib/media";
 import { claimPlayback } from "@/lib/solo-video";
 
 /**
@@ -34,7 +35,10 @@ import { claimPlayback } from "@/lib/solo-video";
  *
  * Nothing is fetched until it is wanted either: `preload="none"` means the only
  * thing on the wire is the poster, which is a real frame cut from the clip, so
- * the box is never empty and never jumps.
+ * the box is never empty and never jumps. The poster goes through the image
+ * optimizer, and a strip can hold it back (`showPoster`) for a card that is
+ * nowhere near the screen: the declared aspect ratio keeps the box its size
+ * either way.
  *
  * It is a button, not a bare video, because it does something when you click
  * it: that gets keyboard operation and a screen-reader label for free.
@@ -54,11 +58,18 @@ export default function Reel({
    * playback starts.
    */
   soundRef,
+  /**
+   * Whether to give the video its poster yet. A strip of twenty clips turns
+   * this on as each card comes near the screen, rather than fetching twenty
+   * frames for a row the reader may never scroll along.
+   */
+  showPoster = true,
 }: {
   reel: ReelData;
   className?: string;
   onOpen?: () => void;
   soundRef?: RefObject<boolean>;
+  showPoster?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
 
@@ -134,7 +145,7 @@ export default function Reel({
     >
       <video
         ref={ref}
-        poster={reel.poster}
+        poster={showPoster ? posterSrc(reel.poster) : undefined}
         // `muted` is the honest starting state and is what makes the first
         // `play()` permissible at all; the call above raises it when asked.
         muted
