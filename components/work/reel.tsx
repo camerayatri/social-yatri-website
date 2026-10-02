@@ -70,12 +70,20 @@ export default function Reel({
    * frames for a row the reader may never scroll along.
    */
   showPoster = true,
+  /**
+   * Fetch the poster at once rather than when the browser judges it near. For
+   * the cards that fill the strip's first screen: the first is the page's
+   * largest paint on a phone, and a lazy image waits for layout before it is
+   * even asked for (measured: 0.74s as a video poster, 1.05s lazy).
+   */
+  eager = false,
 }: {
   reel: ReelData;
   className?: string;
   onOpen?: () => void;
   soundRef?: RefObject<boolean>;
   showPoster?: boolean;
+  eager?: boolean;
 }) {
   const ref = useRef<HTMLVideoElement>(null);
   const stalled = useClip(ref, reel.src);
@@ -182,7 +190,7 @@ export default function Reel({
           {...poster}
           alt=""
           aria-hidden
-          loading="lazy"
+          loading={eager ? "eager" : "lazy"}
           decoding="async"
           draggable={false}
           // Inline, because the strip's slide rule (`.carousel-slide img`,
