@@ -7,6 +7,7 @@ import { useGSAP } from "@gsap/react";
 import { CONNECT, DIRECT, NAV, SITE } from "@/lib/content";
 import TransitionLink from "@/components/transition/transition-link";
 import Reveal from "@/components/effects/reveal";
+import { ArrowUpRightIcon, Icon } from "@/components/ui/icons";
 
 /**
  * The footer.
@@ -112,23 +113,37 @@ export default function SiteFooter() {
           the number can be read off the footer without a click.
         */}
         <ul className="mr-[8vw] flex flex-col gap-[0.75em] max-tablet:mr-0">
-          {DIRECT.map((entry) => (
-            <li key={entry.label}>
-              <a
-                href={entry.href ?? undefined}
-                {...(entry.href?.startsWith("http")
-                  ? { target: "_blank", rel: "noreferrer" }
-                  : null)}
-                // Padded to a 44px touch target without moving the type.
-                className="group block py-[6px] -my-[6px] opacity-60 transition-opacity duration-300 hover:opacity-100"
-              >
-                <span className="statement group-hover:text-accent block text-[clamp(20px,1.9vw,28px)] transition-colors duration-300">
-                  {entry.label}
-                </span>
-                <span className="label-xs block opacity-70">{entry.value}</span>
-              </a>
-            </li>
-          ))}
+          {DIRECT.map((entry) => {
+            const external = entry.href?.startsWith("http") ?? false;
+            return (
+              <li key={entry.label}>
+                <a
+                  href={entry.href ?? undefined}
+                  {...(external ? { target: "_blank", rel: "noreferrer" } : null)}
+                  // Padded to a 44px touch target without moving the type.
+                  className="group block py-[6px] -my-[6px] opacity-60 transition-opacity duration-300 hover:opacity-100"
+                >
+                  {/*
+                    The icon leads the name and takes its colour, so it turns
+                    yellow with it on hover. The two that leave the site (the
+                    profile and the map) trail a small arrow, and say so to a
+                    screen reader, since they open in a new tab.
+                  */}
+                  <span className="statement group-hover:text-accent flex items-center gap-[0.35em] text-[clamp(20px,1.9vw,28px)] transition-colors duration-300">
+                    <Icon name={entry.icon} className="text-[0.8em]" />
+                    {entry.label}
+                    {external ? (
+                      <>
+                        <ArrowUpRightIcon className="text-[0.6em] opacity-60" />
+                        <span className="sr-only"> (opens in a new tab)</span>
+                      </>
+                    ) : null}
+                  </span>
+                  <span className="label-xs block opacity-70">{entry.value}</span>
+                </a>
+              </li>
+            );
+          })}
         </ul>
       </div>
 

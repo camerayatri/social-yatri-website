@@ -70,14 +70,24 @@ export const SITE = {
  * opens a draft, the address opens the map, and the two profiles open the
  * profile. A row with an empty value is not shown at all rather than printed
  * as dead text, so nothing on the page looks like a link that does nothing.
+ *
+ * `icon` names the glyph drawn beside the label, from `components/ui/icons`.
+ * The client asked for icons where a name runs long; on a phone the contact
+ * page shows the icon alone and keeps the word for screen readers.
  */
-export const DIRECT: { label: string; value: string; href: string | null }[] = [
-  { label: "Instagram", value: SITE.instagram, href: SITE.instagram ? `https://instagram.com/${SITE.instagram}` : null },
-  { label: "LinkedIn", value: SITE.linkedin, href: SITE.linkedin ? `https://www.linkedin.com/company/${SITE.linkedin}` : null },
-  { label: "Email", value: SITE.email, href: `mailto:${SITE.email}` },
-  { label: "Phone", value: SITE.phone, href: SITE.phoneHref },
-  { label: "Address", value: SITE.address, href: SITE.mapUrl },
-].filter((entry) => entry.value !== "");
+export type DirectIcon = "instagram" | "linkedin" | "mail" | "phone" | "map-pin";
+
+type DirectEntry = { label: string; value: string; href: string | null; icon: DirectIcon };
+
+export const DIRECT = (
+  [
+    { label: "Instagram", icon: "instagram", value: SITE.instagram, href: SITE.instagram ? `https://instagram.com/${SITE.instagram}` : null },
+    { label: "LinkedIn", icon: "linkedin", value: SITE.linkedin, href: SITE.linkedin ? `https://www.linkedin.com/company/${SITE.linkedin}` : null },
+    { label: "Email", icon: "mail", value: SITE.email, href: `mailto:${SITE.email}` },
+    { label: "Phone", icon: "phone", value: SITE.phone, href: SITE.phoneHref },
+    { label: "Address", icon: "map-pin", value: SITE.address, href: SITE.mapUrl },
+  ] satisfies DirectEntry[] as DirectEntry[]
+).filter((entry) => entry.value !== "");
 
 export const NAV = [
   { label: "Home", href: "/" },

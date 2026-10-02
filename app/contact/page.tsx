@@ -4,6 +4,7 @@ import { CONNECT, DIRECT, SITE } from "@/lib/content";
 import { Marker } from "@/components/ui/section-head";
 import Reveal from "@/components/effects/reveal";
 import ContactForm from "@/components/sections/contact-form";
+import { Icon } from "@/components/ui/icons";
 
 /*
  * The whole point of the page, in the snippet: somebody searching for the
@@ -83,21 +84,31 @@ export default function ContactPage() {
                   still unconfirmed is absent rather than guessed: a wrong
                   handle sends people to somebody else's account.
                 */}
-                {DIRECT.map((entry) => (
-                  <a
-                    key={entry.label}
-                    href={entry.href ?? undefined}
-                    {...(entry.href?.startsWith("http")
-                      ? { target: "_blank", rel: "noreferrer" }
-                      : null)}
-                    className="rule hover:text-accent group flex items-baseline justify-between gap-[1.5em] border-b py-[0.9em] text-[1.0625em] opacity-80 transition-[opacity,padding,color] duration-300 hover:pl-[0.5em] hover:opacity-100"
-                  >
-                    <span>{entry.value}</span>
-                    <span className="label-xs shrink-0 opacity-50 transition-opacity duration-300 group-hover:opacity-80">
-                      {entry.label}
-                    </span>
-                  </a>
-                ))}
+                {DIRECT.map((entry) => {
+                  const external = entry.href?.startsWith("http") ?? false;
+                  return (
+                    <a
+                      key={entry.label}
+                      href={entry.href ?? undefined}
+                      {...(external ? { target: "_blank", rel: "noreferrer" } : null)}
+                      className="rule hover:text-accent group flex items-baseline justify-between gap-[1.5em] border-b py-[0.9em] text-[1.0625em] opacity-80 transition-[opacity,padding,color] duration-300 hover:pl-[0.5em] hover:opacity-100 max-mobile:gap-[1em]"
+                    >
+                      <span>{entry.value}</span>
+                      {/*
+                        The icon sits with the mono label. Below 768px it
+                        stands in for the label, so a long value (the address,
+                        the email) gets the row's width; the word is still
+                        there for a screen reader. `self-center` because an
+                        icon has no baseline worth aligning to.
+                      */}
+                      <span className="label-xs flex shrink-0 items-center gap-[0.6em] self-center opacity-50 transition-opacity duration-300 group-hover:opacity-80">
+                        <Icon name={entry.icon} className="text-[1.35em] max-mobile:text-[1.6em]" />
+                        <span className="max-mobile:sr-only">{entry.label}</span>
+                        {external ? <span className="sr-only"> (opens in a new tab)</span> : null}
+                      </span>
+                    </a>
+                  );
+                })}
               </div>
             </div>
           </div>
