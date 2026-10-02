@@ -6,6 +6,8 @@ import { Marker } from "@/components/ui/section-head";
 import Reveal from "@/components/effects/reveal";
 import ContactForm from "@/components/sections/contact-form";
 import { Icon } from "@/components/ui/icons";
+import JsonLd from "@/components/seo/json-ld";
+import { contactPage } from "./structured-data";
 
 /*
  * The whole point of the page, in the snippet: somebody searching for the
@@ -13,11 +15,15 @@ import { Icon } from "@/components/ui/icons";
  * the content, so a new number saved in the admin is the number in the
  * snippet too.
  */
+const TITLE = "Contact a Social Media Agency in Kolkata";
+const describe = (site: { name: string; address: string; phone: string; email: string }, question: string) =>
+  `Visit ${site.name} at ${site.address}, call ${site.phone} or email ${site.email}. ${question}`;
+
 export async function generateMetadata(): Promise<Metadata> {
   const { site, connect } = await getContent();
   return {
-    title: "Contact a Social Media Agency in Kolkata",
-    description: `Visit ${site.name} at ${site.address}, call ${site.phone} or email ${site.email}. ${connect.question}`,
+    title: TITLE,
+    description: describe(site, connect.question),
     alternates: { canonical: "/contact" },
   };
 }
@@ -43,6 +49,7 @@ export default async function ContactPage() {
   const { site, connect } = await getContent();
   return (
     <main>
+      <JsonLd data={contactPage(site, TITLE, describe(site, connect.question))} />
       <section className="text-ink px-[var(--gutter)] pt-[calc(var(--corner)+96px)] pb-[7em]">
         {/*
           Two rows: the marker's own height, then everything else. Without the
