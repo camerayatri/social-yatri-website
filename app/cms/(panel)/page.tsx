@@ -115,7 +115,7 @@ export default async function Dashboard() {
                     <span>{describeActor(e.action, e.actorEmail)}</span> {ACTIONS[e.action] ?? e.action}{" "}
                     <span className="opacity-80">{describeTarget(e.action, e.target, e.detail)}</span>
                   </span>
-                  <span className="text-[12px] opacity-55">{formatWhen(e.at)}</span>
+                  <span className="text-[12px] opacity-65">{formatWhen(e.at)}</span>
                 </li>
               ))}
             </ul>
@@ -126,7 +126,7 @@ export default async function Dashboard() {
             {CONTENT_KEYS.map((k) => (
               <li key={k} className="flex items-baseline justify-between gap-3 py-1.5">
                 <span>{CONTENT_LABELS[k]}</span>
-                <span className="shrink-0 text-[12px] opacity-55">
+                <span className="shrink-0 text-[12px] opacity-65">
                   {docs[k].fromDefaults && docs[k].version === 0
                     ? "original"
                     : `v${docs[k].version}${docs[k].updatedAt ? ` · ${formatWhen(docs[k].updatedAt).split(",")[0]}` : ""}`}

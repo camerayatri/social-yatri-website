@@ -39,7 +39,7 @@ export function MediaGrid({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={thumb} alt="" loading="lazy" className="absolute inset-0 size-full object-cover" />
                 ) : (
-                  <span className="absolute inset-0 flex items-center justify-center text-[12px] opacity-50">No preview</span>
+                  <span className="absolute inset-0 flex items-center justify-center text-[12px] opacity-65">No preview</span>
                 )}
                 {item.kind === "video" ? (
                   <span className="bg-ink/80 text-paper absolute bottom-1.5 left-1.5 rounded-full px-2 py-0.5 text-[11px]">

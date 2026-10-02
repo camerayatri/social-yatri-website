@@ -107,7 +107,7 @@ export function ReelGrid<T extends ReelLike>({
               ) : null}
             </div>
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[12px] tabular-nums opacity-55">
+              <span className="text-[12px] tabular-nums opacity-65">
                 {item.w}×{item.h}
               </span>
               <Button

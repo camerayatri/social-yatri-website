@@ -86,7 +86,7 @@ export default async function EnquiryPage({ params }: { params: Promise<{ id: st
             {rows.map((row) => (
               <div key={row.label} className="contents">
                 <dt className="cms-label pt-[3px] opacity-60 max-mobile:pt-2">{row.label}</dt>
-                <dd className="min-w-0 break-words">{row.value || <span className="opacity-45">Not given</span>}</dd>
+                <dd className="min-w-0 break-words">{row.value || <span className="opacity-65">Not given</span>}</dd>
               </div>
             ))}
           </dl>
@@ -96,7 +96,7 @@ export default async function EnquiryPage({ params }: { params: Promise<{ id: st
           {item.message ? (
             <p className="text-[16px] leading-[1.55] break-words whitespace-pre-wrap">{item.message}</p>
           ) : (
-            <p className="opacity-55">They didn&apos;t write a message.</p>
+            <p className="opacity-65">They didn&apos;t write a message.</p>
           )}
         </Card>
 

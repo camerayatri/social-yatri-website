@@ -70,7 +70,7 @@ export function MediaField({ label, kind, value, onChange, aspect, error, altErr
             // eslint-disable-next-line @next/next/no-img-element
             <img src={thumb} alt="" className="absolute inset-0 size-full object-cover" />
           ) : (
-            <span className="absolute inset-0 flex items-center justify-center text-[12px] opacity-50">Empty</span>
+            <span className="absolute inset-0 flex items-center justify-center text-[12px] opacity-65">Empty</span>
           )}
           {kind === "video" && value ? (
             <span className="bg-ink/80 text-paper absolute bottom-1 left-1 rounded-full px-1.5 text-[10px]">▶</span>

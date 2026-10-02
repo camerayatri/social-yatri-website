@@ -169,7 +169,7 @@ export function MultiMediaPicker({
                         </span>
                       ) : null}
                       <span className="line-clamp-2 px-2 pt-1.5 text-[12px] leading-[1.3] opacity-80">{item.alt}</span>
-                      <span className="px-2 pt-0.5 pb-1.5 text-[11px] opacity-55">
+                      <span className="px-2 pt-0.5 pb-1.5 text-[11px] opacity-65">
                         {why ?? (item.w && item.h ? `${item.w}×${item.h}` : "")}
                       </span>
                     </button>

@@ -69,7 +69,7 @@ export default function AdminNav({
     <nav aria-label="Admin" className="flex flex-col gap-5">
       {SECTIONS.map((section) => (
         <div key={section.group || "top"} className="flex flex-col gap-0.5">
-          {section.group ? <p className="cms-label mb-1 px-3 opacity-45">{section.group}</p> : null}
+          {section.group ? <p className="cms-label mb-1 px-3 opacity-65">{section.group}</p> : null}
           {section.items.map((item) => {
             const active = isActive(item.href);
             const count = counts[item.href] ?? 0;
@@ -101,7 +101,7 @@ export default function AdminNav({
     <div className="flex flex-col gap-2 border-t border-ink/10 pt-4 text-[13px]">
       <p className="truncate" title={email}>
         {name}
-        <span className="block truncate opacity-55">{email}</span>
+        <span className="block truncate opacity-65">{email}</span>
       </p>
       <div className="flex items-center gap-3">
         <form action={logout}>

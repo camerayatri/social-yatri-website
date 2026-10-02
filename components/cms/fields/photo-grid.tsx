@@ -68,7 +68,7 @@ export function PhotoGrid({
               </span>
             ) : null}
           </span>
-          <span className="text-[12px] tabular-nums opacity-55">
+          <span className="text-[12px] tabular-nums opacity-65">
             {item.w}×{item.h} · {item.w > item.h ? "landscape" : item.w < item.h ? "portrait" : "square"}
           </span>
           <TextArea

@@ -83,7 +83,7 @@ export default async function InboxPage({ searchParams }: { searchParams: Promis
               }`}
             >
               {label}
-              <span className={`text-[12px] ${active ? "opacity-70" : "opacity-55"}`}>{count[v]}</span>
+              <span className={`text-[12px] ${active ? "opacity-70" : "opacity-65"}`}>{count[v]}</span>
             </Link>
           );
         })}

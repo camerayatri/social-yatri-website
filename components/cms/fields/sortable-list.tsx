@@ -39,17 +39,36 @@ export type SortableListProps<T> = {
 let lastId = 0;
 const nextId = () => `item-${++lastId}`;
 
+type Track<T> = { items: T[]; ids: string[]; pending: string[] | null };
+
 /**
  * Ids that follow the entries through moves, removals and additions.
  *
- * Moving or removing keeps each entry's value as it was (the same object), so
- * a new list is matched against the last one by identity first. An entry
- * edited in place is a new object at the same position, and keeps the id of
- * the one it replaced; anything else is new and gets a new id.
+ * The list's own buttons know exactly what they did, so a move, removal or
+ * addition hands the rearranged ids over (`expect`) together with the change.
+ * That holds even when the editor rewrites every entry on the way (the
+ * services renumber themselves), which leaves nothing to match by identity.
+ *
+ * Any other change (typing, Discard, a reload) is matched against the last
+ * list: entries unchanged in place keep their ids, then entries found
+ * elsewhere (the same object) bring theirs, and an entry edited in place is a
+ * new object at the same position and keeps the id of the one it replaced.
  */
 function useStableIds<T>(items: T[]) {
-  const [track, setTrack] = useState(() => ({ items, ids: items.map(nextId) }));
-  if (track.items === items) return track.ids;
+  const [track, setTrack] = useState<Track<T>>(() => ({ items, ids: items.map(nextId), pending: null }));
+  const expect = (ids: string[]) => setTrack((t) => ({ ...t, pending: ids }));
+
+  if (track.items === items) {
+    // The handover and the new items arrive in the same render. If the items
+    // did not change, the editor turned the change down (a removal not
+    // confirmed), and the handed-over ids must not linger for the next one.
+    if (track.pending) setTrack({ ...track, pending: null });
+    return { ids: track.ids, expect };
+  }
+  if (track.pending && track.pending.length === items.length) {
+    setTrack({ items, ids: track.pending, pending: null });
+    return { ids: track.pending, expect };
+  }
 
   const old = track.items;
   const used = new Set<number>();
@@ -66,8 +85,8 @@ function useStableIds<T>(items: T[]) {
   const settled = ids.map((id, i) => id ?? (sameLength && !used.has(i) ? take(i) : nextId()));
   // Storing what the last render saw, the way React's docs adjust state to a
   // changed prop: the next render then finds `items` already tracked.
-  setTrack({ items, ids: settled });
-  return settled;
+  setTrack({ items, ids: settled, pending: null });
+  return { ids: settled, expect };
 }
 
 export function SortableList<T>({
@@ -86,18 +105,24 @@ export function SortableList<T>({
 }: SortableListProps<T>) {
   const [dragging, setDragging] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
-  const ids = useStableIds(items);
+  const { ids, expect } = useStableIds(items);
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= items.length || from === to) return;
     const next = [...items];
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
+    const nextIds = [...ids];
+    nextIds.splice(to, 0, ...nextIds.splice(from, 1));
+    expect(nextIds);
     onChange(next);
   };
 
   const update = (index: number) => (item: T) => onChange(items.map((it, i) => (i === index ? item : it)));
-  const remove = (index: number) => onChange(items.filter((_, i) => i !== index));
+  const remove = (index: number) => {
+    expect(ids.filter((_, i) => i !== index));
+    onChange(items.filter((_, i) => i !== index));
+  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -184,7 +209,14 @@ export function SortableList<T>({
       {error ? <p className="text-[13px] text-[#a3271b]">{error}</p> : null}
       {newItem ? (
         <div>
-          <Button size="sm" onClick={() => onChange([...items, newItem()])} disabled={items.length >= max}>
+          <Button
+            size="sm"
+            onClick={() => {
+              expect([...ids, nextId()]);
+              onChange([...items, newItem()]);
+            }}
+            disabled={items.length >= max}
+          >
             + {addLabel}
           </Button>
         </div>

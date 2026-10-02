@@ -199,7 +199,7 @@ function MediaDetails({
               <p className="mt-1 text-[13px] opacity-60">Not used anywhere on the site right now.</p>
             )}
           </div>
-          <p className="text-[12px] opacity-55">Added {formatWhen(item.createdAt)}</p>
+          <p className="text-[12px] opacity-65">Added {formatWhen(item.createdAt)}</p>
           <div className="flex flex-wrap gap-2 border-t border-ink/10 pt-4">
             <Button size="sm" variant="danger" onClick={remove} disabled={busy || inUse || refs === null}>
               Remove from library

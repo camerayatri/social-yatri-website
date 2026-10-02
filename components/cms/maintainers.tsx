@@ -108,7 +108,7 @@ export function MaintainerRows({ rows, meId }: { rows: MaintainerSummary[]; meId
               <div className="min-w-0">
                 <p className="text-[15px]">
                   {row.name}
-                  {me ? <span className="ml-2 text-[12px] opacity-55">(you)</span> : null}
+                  {me ? <span className="ml-2 text-[12px] opacity-65">(you)</span> : null}
                   {row.disabled ? <span className="ml-2 rounded-full bg-ink/10 px-2 py-0.5 text-[12px]">Disabled</span> : null}
                   {row.mustChangePassword && !row.disabled ? (
                     <span className="ml-2 rounded-full bg-[#fff3cc] px-2 py-0.5 text-[12px]">Temporary password</span>
