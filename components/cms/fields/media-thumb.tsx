@@ -43,7 +43,7 @@ export function Thumb({
           className={`absolute inset-0 size-full ${fit === "contain" ? "object-contain" : "object-cover"}`}
         />
       ) : (
-        <span className="absolute inset-0 flex items-center justify-center p-2 text-center text-[12px] opacity-55">
+        <span className="absolute inset-0 flex items-center justify-center p-2 text-center text-[12px] opacity-65">
           {broken ? "Can't load the preview" : "No preview"}
         </span>
       )}

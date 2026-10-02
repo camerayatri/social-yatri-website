@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { deleteMedia, mediaUsage, updateMediaAlt } from "@/lib/cms/actions/media";
 import { describePath } from "@/lib/cms/labels";
 import type { MediaItem, MediaKind, Reference } from "@/lib/cms/media";
+import { DESCRIBE } from "../fields/describe";
 import { TextArea } from "../fields/text-area";
 import { Button, Card, Notice, formatBytes, formatWhen } from "../ui";
 import { MediaGrid } from "./media-grid";
@@ -168,7 +169,14 @@ function MediaDetails({
             <img src={item.url} alt={item.alt} className="w-full rounded-[8px] border border-ink/10" />
           )}
           {message ? <Notice tone={message.tone}>{message.text}</Notice> : null}
-          <TextArea label="Alt text" value={alt} onChange={setAlt} rows={3} softLimit={250} />
+          <TextArea
+            label={DESCRIBE[item.kind].label}
+            hint={`${DESCRIBE[item.kind].hint} New picks copy it; places already using the file keep their own.`}
+            value={alt}
+            onChange={setAlt}
+            rows={3}
+            softLimit={250}
+          />
           <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="primary" onClick={saveAlt} disabled={busy || alt.trim() === item.alt || !alt.trim()}>
               Save description
@@ -191,7 +199,7 @@ function MediaDetails({
               <p className="mt-1 text-[13px] opacity-60">Not used anywhere on the site right now.</p>
             )}
           </div>
-          <p className="text-[12px] opacity-55">Added {formatWhen(item.createdAt)}</p>
+          <p className="text-[12px] opacity-65">Added {formatWhen(item.createdAt)}</p>
           <div className="flex flex-wrap gap-2 border-t border-ink/10 pt-4">
             <Button size="sm" variant="danger" onClick={remove} disabled={busy || inUse || refs === null}>
               Remove from library

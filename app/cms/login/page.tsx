@@ -36,7 +36,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
           ) : null}
           <LoginForm next={typeof next === "string" ? next : undefined} disabled={!ready} />
         </div>
-        <p className="mt-6 text-center text-[13px] opacity-55">
+        <p className="mt-6 text-center text-[13px] opacity-65">
           Forgotten your password? Ask another maintainer to issue a new one.
         </p>
       </div>

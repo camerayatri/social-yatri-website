@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { registerUpload } from "@/lib/cms/actions/media";
 import type { MediaItem, MediaKind } from "@/lib/cms/media";
 import { useAdmin } from "../admin-context";
+import { DESCRIBE } from "../fields/describe";
 import { TextArea } from "../fields/text-area";
 import { Button, Notice, formatBytes } from "../ui";
 
@@ -141,7 +142,7 @@ export function Uploader({
   const send = async () => {
     if (!picked) return;
     if (!alt.trim()) {
-      setError("Describe what's in it first: alt text is how people who can't see it know what it shows.");
+      setError("Describe what's in it first: the description is read aloud to blind visitors and used by Google.");
       return;
     }
     setError(null);
@@ -149,7 +150,10 @@ export function Uploader({
       let posterUrl: string | null = null;
       if (picked.kind === "video") {
         setStage("Saving the poster");
-        const poster = await new Promise<Blob | null>((r) => canvasRef.current?.toBlob(r, "image/jpeg", 0.85) ?? r(null));
+        // toBlob answers through its callback and returns nothing, so the
+        // missing-canvas case has to be decided before calling it, not after.
+        const canvas = canvasRef.current;
+        const poster = canvas ? await new Promise<Blob | null>((r) => canvas.toBlob(r, "image/jpeg", 0.85)) : null;
         if (!poster) throw new Error("The poster frame couldn't be captured. Move the scrubber and try again.");
         const name = safeName(picked.file.name).replace(/\.[a-z0-9]+$/, "");
         const res = await upload(`media/${name}-poster.jpg`, poster, {
@@ -261,13 +265,13 @@ export function Uploader({
               </Notice>
             ) : null}
             <TextArea
-              label="Alt text"
+              label={DESCRIBE[picked.kind].label}
               required
               value={alt}
               onChange={setAlt}
               rows={3}
               softLimit={250}
-              hint="Say what's in it, as you would to someone on the phone: who, what, where. Not the file name."
+              hint={`${DESCRIBE[picked.kind].hint} Who, what, where; not the file name.`}
             />
             {progress !== null || busy ? (
               <div className="flex flex-col gap-1" aria-live="polite">

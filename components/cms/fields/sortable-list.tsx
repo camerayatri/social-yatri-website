@@ -14,6 +14,10 @@ import { Button } from "../ui";
  *
  * `renderItem` draws one entry's fields and gets an `update` for that entry.
  * Give `newItem` to allow adding, `min`/`max` to bound the length.
+ *
+ * Each entry is keyed by an id that lives only here, never in the document,
+ * so whatever an entry holds on screen (a section folded open, a half-typed
+ * box) moves with it when it is moved, rather than staying in the slot.
  */
 export type SortableListProps<T> = {
   label?: ReactNode;
@@ -32,6 +36,59 @@ export type SortableListProps<T> = {
   itemError?: (index: number) => string | undefined;
 };
 
+let lastId = 0;
+const nextId = () => `item-${++lastId}`;
+
+type Track<T> = { items: T[]; ids: string[]; pending: string[] | null };
+
+/**
+ * Ids that follow the entries through moves, removals and additions.
+ *
+ * The list's own buttons know exactly what they did, so a move, removal or
+ * addition hands the rearranged ids over (`expect`) together with the change.
+ * That holds even when the editor rewrites every entry on the way (the
+ * services renumber themselves), which leaves nothing to match by identity.
+ *
+ * Any other change (typing, Discard, a reload) is matched against the last
+ * list: entries unchanged in place keep their ids, then entries found
+ * elsewhere (the same object) bring theirs, and an entry edited in place is a
+ * new object at the same position and keeps the id of the one it replaced.
+ */
+function useStableIds<T>(items: T[]) {
+  const [track, setTrack] = useState<Track<T>>(() => ({ items, ids: items.map(nextId), pending: null }));
+  const expect = (ids: string[]) => setTrack((t) => ({ ...t, pending: ids }));
+
+  if (track.items === items) {
+    // The handover and the new items arrive in the same render. If the items
+    // did not change, the editor turned the change down (a removal not
+    // confirmed), and the handed-over ids must not linger for the next one.
+    if (track.pending) setTrack({ ...track, pending: null });
+    return { ids: track.ids, expect };
+  }
+  if (track.pending && track.pending.length === items.length) {
+    setTrack({ items, ids: track.pending, pending: null });
+    return { ids: track.pending, expect };
+  }
+
+  const old = track.items;
+  const used = new Set<number>();
+  const take = (j: number) => (used.add(j), track.ids[j]);
+  // Unchanged in place first, so typing a line that happens to equal another
+  // line's text never trades their ids; then whatever moved; then the rest.
+  const ids: (string | undefined)[] = items.map((item, i) => (i < old.length && old[i] === item ? take(i) : undefined));
+  ids.forEach((id, i) => {
+    if (id) return;
+    const j = old.findIndex((o, k) => !used.has(k) && o === items[i]);
+    if (j !== -1) ids[i] = take(j);
+  });
+  const sameLength = items.length === old.length;
+  const settled = ids.map((id, i) => id ?? (sameLength && !used.has(i) ? take(i) : nextId()));
+  // Storing what the last render saw, the way React's docs adjust state to a
+  // changed prop: the next render then finds `items` already tracked.
+  setTrack({ items, ids: settled, pending: null });
+  return { ids: settled, expect };
+}
+
 export function SortableList<T>({
   label,
   hint,
@@ -48,17 +105,24 @@ export function SortableList<T>({
 }: SortableListProps<T>) {
   const [dragging, setDragging] = useState<number | null>(null);
   const [over, setOver] = useState<number | null>(null);
+  const { ids, expect } = useStableIds(items);
 
   const move = (from: number, to: number) => {
     if (to < 0 || to >= items.length || from === to) return;
     const next = [...items];
     const [moved] = next.splice(from, 1);
     next.splice(to, 0, moved);
+    const nextIds = [...ids];
+    nextIds.splice(to, 0, ...nextIds.splice(from, 1));
+    expect(nextIds);
     onChange(next);
   };
 
   const update = (index: number) => (item: T) => onChange(items.map((it, i) => (i === index ? item : it)));
-  const remove = (index: number) => onChange(items.filter((_, i) => i !== index));
+  const remove = (index: number) => {
+    expect(ids.filter((_, i) => i !== index));
+    onChange(items.filter((_, i) => i !== index));
+  };
 
   return (
     <div className="flex flex-col gap-2">
@@ -71,7 +135,7 @@ export function SortableList<T>({
       <ol className="flex flex-col gap-2">
         {items.map((item, index) => (
           <li
-            key={index}
+            key={ids[index]}
             data-drop-target={over === index && dragging !== null && dragging !== index ? "true" : undefined}
             onDragOver={(e) => {
               if (dragging === null) return;
@@ -145,7 +209,14 @@ export function SortableList<T>({
       {error ? <p className="text-[13px] text-[#a3271b]">{error}</p> : null}
       {newItem ? (
         <div>
-          <Button size="sm" onClick={() => onChange([...items, newItem()])} disabled={items.length >= max}>
+          <Button
+            size="sm"
+            onClick={() => {
+              expect([...ids, nextId()]);
+              onChange([...items, newItem()]);
+            }}
+            disabled={items.length >= max}
+          >
             + {addLabel}
           </Button>
         </div>

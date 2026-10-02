@@ -7,6 +7,7 @@ import {
   hashSessionId,
   newSessionId,
   sessionCookieOptions,
+  clearedSessionCookie,
   signSession,
   verifySession,
 } from "./cookie";
@@ -42,7 +43,7 @@ export async function destroyCurrentSession() {
   const session = await currentSessionCookie();
   if (session) await sql().query(`DELETE FROM sessions WHERE id_hash = $1`, [hashSessionId(session.id)]);
   const jar = await cookies();
-  jar.delete(SESSION_COOKIE);
+  jar.set(clearedSessionCookie);
 }
 
 /** Ends every session of `maintainerId` except this browser's. Returns how many ended. */

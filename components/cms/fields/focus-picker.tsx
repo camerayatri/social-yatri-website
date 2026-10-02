@@ -51,7 +51,7 @@ export function FocusPicker({
   return (
     <div className="flex flex-col gap-2">
       <p className="cms-label opacity-75">
-        {label} <span className="normal-case opacity-60">({x}% {y}%)</span>
+        {label} <span className="normal-case">({x}% {y}%)</span>
       </p>
       <div className="flex flex-wrap items-start gap-3">
         <div
@@ -84,7 +84,7 @@ export function FocusPicker({
                 className="h-[96px] rounded-[6px] border border-ink/10 object-cover"
                 style={{ aspectRatio: String(ratio), objectPosition: `${x}% ${y}%` }}
               />
-              <span className="text-[11px] opacity-50">{ratio === 1 ? "1:1" : ratio > 1 ? "wide" : "tall"}</span>
+              <span className="text-[11px] opacity-65">{ratio === 1 ? "1:1" : ratio > 1 ? "wide" : "tall"}</span>
             </div>
           ))}
         </div>

@@ -31,7 +31,7 @@ export function FieldShell({
           {label}
           {required ? <span aria-hidden> *</span> : null}
         </label>
-        {aside ? <span className="text-[12px] opacity-50">{aside}</span> : null}
+        {aside ? <span className="text-[12px] opacity-65">{aside}</span> : null}
       </div>
       {children}
       {error ? (

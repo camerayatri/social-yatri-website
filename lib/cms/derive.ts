@@ -58,15 +58,40 @@ export function shootTotal(shoots: ContentDocs["shoots"]) {
 }
 
 /**
+ * The shapes (width / height) the six home cards are cut to, in the order the
+ * first six works run: 4:3 against 3:4 against 1:1, so the two columns never
+ * line up.
+ */
+export const HOME_SLOTS = [4 / 3, 3 / 4, 1, 4 / 3, 3 / 4, 4 / 3] as const;
+
+/** Whether a picture is cut to home card `index`'s shape, within 2%. Past the sixth card there is no shape to match. */
+export function fitsHomeSlot(picture: { w: number; h: number }, index: number) {
+  const slot = HOME_SLOTS[index];
+  if (slot === undefined) return true;
+  return Math.abs(picture.w / picture.h - slot) / slot <= 0.02;
+}
+
+/**
  * The cards on the home page's work section: the first six works, each in the
  * home cover cut for its slot where there is one. The clip that plays on hover
  * is always the wall's, so /work is not changed by what the home page wears.
+ *
+ * Home covers are keyed by work, but the shapes belong to the positions, so
+ * reordering the works can land a cover on a card of another shape. Such a
+ * cover is simply not used: the card shows the wall's cover instead, cut to
+ * the card's shape around its focus point, exactly as a work without a home
+ * cover does, and the editor says which card it is. `aspect` is the card's
+ * CSS aspect ratio: the home cover's own pixel size (within 2% of the slot,
+ * so the whole artwork shows), or the slot's shape for a fallback.
  */
 export function homeCards(docs: Pick<ContentDocs, "works" | "homeCovers" | "reels">) {
-  return docs.works.slice(0, 6).map((work) => {
+  return docs.works.slice(0, HOME_SLOTS.length).map((work, i) => {
     const wall = workCover(work, docs.reels);
     const home = docs.homeCovers[work.slug];
-    return { slug: work.slug, title: work.title, cover: home ? { ...home, reel: wall.reel } : wall };
+    if (home && fitsHomeSlot(home, i)) {
+      return { slug: work.slug, title: work.title, cover: { ...home, reel: wall.reel }, aspect: `${home.w} / ${home.h}` };
+    }
+    return { slug: work.slug, title: work.title, cover: wall, aspect: String(HOME_SLOTS[i]) };
   });
 }
 

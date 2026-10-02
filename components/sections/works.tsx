@@ -20,16 +20,14 @@ import TransitionLink from "@/components/transition/transition-link";
 /**
  * Top offsets alternate so no two neighbours align. The shapes alternate too,
  * 4:3 against 3:4 against 1:1, but they are not set here: the client cut the
- * six home covers (the `homeCovers` document) to exactly those shapes, so each card takes
- * its cover's own ratio and shows the whole artwork. A card without a home
- * cover falls back to the wall's cover and its shape.
+ * six home covers (the `homeCovers` document) to exactly those shapes, so each
+ * card takes its cover's own ratio and shows the whole artwork. A card without
+ * a fitting home cover shows the wall's cover cut to the card's shape around
+ * its focus point. `homeCards` works out which, and hands over the ratio.
  */
 const OFFSETS = ["mt-[8vh]", "mt-[18vh]", "mt-[4vh]", "mt-[22vh]", "mt-[10vh]", "mt-[14vh]"];
 /* One rhythm once the two columns fold into one: the zigzag has nothing to zag against. */
 const FOLDED_OFFSET = "max-tablet:mt-[6vh]";
-
-/** The shape of a card whose still has none of its own (a clip's poster). */
-const DEFAULT_ASPECT = "4 / 5";
 
 /** One card as the server works it out: the home cover for the still, the wall's clip for the hover. */
 type Card = ReturnType<typeof homeCards>[number];
@@ -43,8 +41,7 @@ function WorkItem({
   offset: string;
   index: number;
 }) {
-  const { cover } = work;
-  const aspect = cover.w && cover.h ? `${cover.w} / ${cover.h}` : DEFAULT_ASPECT;
+  const { cover, aspect } = work;
 
   return (
     <TransitionLink

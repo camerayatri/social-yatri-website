@@ -4,10 +4,12 @@ import type { MediaItem } from "@/lib/cms/media";
 import { Button } from "../ui";
 import { Thumb } from "./media-thumb";
 import { SortableGrid, moveItem, occurrenceKeys } from "./sortable-grid";
+import { DESCRIBE, DESCRIBE_MISSING } from "./describe";
 import { TextArea } from "./text-area";
 
 /**
- * A set of photographs as a grid of cards, each with its alt text in place.
+ * A set of photographs as a grid of cards, each with its description (alt
+ * text) in place.
  *
  * The first photograph is the one the set opens on (in the strips on
  * /photoshoot and on a category's page), so it wears a badge and the others
@@ -15,8 +17,8 @@ import { TextArea } from "./text-area";
  * the file stays in the media library. Pixel sizes come from the library,
  * never from typing.
  *
- * `altId(i)` gives each alt box a stable id, so a list of photos missing alt
- * text elsewhere on the page can jump straight to the right box.
+ * `altId(i)` gives each description box a stable id, so a list of photos
+ * still undescribed elsewhere on the page can jump straight to the right box.
  */
 
 export type PhotoLike = { src: string; alt: string; w: number; h: number };
@@ -66,16 +68,17 @@ export function PhotoGrid({
               </span>
             ) : null}
           </span>
-          <span className="text-[12px] tabular-nums opacity-55">
+          <span className="text-[12px] tabular-nums opacity-65">
             {item.w}×{item.h} · {item.w > item.h ? "landscape" : item.w < item.h ? "portrait" : "square"}
           </span>
           <TextArea
             id={altId(i)}
-            label="Alt text"
+            label={DESCRIBE.image.label}
             required
             rows={2}
             value={item.alt}
-            error={errorAt(i, "alt") ?? (item.alt.trim() ? undefined : "Needs alt text before saving.")}
+            error={errorAt(i, "alt") ?? (item.alt.trim() ? undefined : DESCRIBE_MISSING)}
+            hint={DESCRIBE.image.hint}
             placeholder="Who or what is in it, and where"
             onChange={(alt) => onChange(items.map((p, j) => (j === i ? { ...p, alt } : p)))}
           />
@@ -104,7 +107,7 @@ export function PhotoGrid({
 }
 
 /**
- * The photographs still missing alt text, as buttons that jump to each box.
+ * The photographs still without a description, as buttons that jump to each box.
  * Shown above a set and used as the reason Save is off.
  */
 export function MissingAlt({
@@ -118,8 +121,8 @@ export function MissingAlt({
   return (
     <div className="rounded-[10px] border border-[#b88a00]/40 bg-[#fff3cc] px-4 py-3 text-[14px] text-[#5a4300]">
       <p>
-        <span className="font-medium">Add alt text</span> to {missing.length === 1 ? "1 photo" : `${missing.length} photos`} before
-        saving. It is how people who can&apos;t see a picture know what it shows.
+        <span className="font-medium">Describe {missing.length === 1 ? "1 photo" : `${missing.length} photos`}</span> before saving.
+        The description is read aloud to blind visitors and used by Google.
       </p>
       <ul className="mt-2 flex flex-wrap gap-2">
         {missing.slice(0, 16).map((m) => (

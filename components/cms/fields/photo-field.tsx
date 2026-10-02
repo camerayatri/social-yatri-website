@@ -98,7 +98,10 @@ export function PhotoField({
         kind="image"
         value={current}
         onChange={pick}
-        aspect={aspect}
+        // A strict slot refuses a wrong shape at the pick, so the slot's
+        // "the page will crop it" note never applies; the editor explains a
+        // picture that no longer fits in its own words.
+        aspect={strictShape ? undefined : aspect}
         error={refused ?? error}
         altError={altError}
         hint={hint}

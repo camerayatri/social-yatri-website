@@ -7,6 +7,7 @@ import { discardUploads } from "@/lib/cms/actions/works";
 import type { MediaItem } from "@/lib/cms/media";
 import { useAdmin } from "../admin-context";
 import { Button, Notice, formatBytes } from "../ui";
+import { DESCRIBE } from "./describe";
 import { TextArea } from "./text-area";
 
 /**
@@ -282,10 +283,11 @@ export function PhotoBatchUpload({
                 </div>
                 <TextArea
                   id={`${altIdBase}-${entry.id}`}
-                  label="Alt text"
+                  label={DESCRIBE.image.label}
                   required
                   rows={2}
                   value={entry.alt}
+                  hint={DESCRIBE.image.hint}
                   onChange={(alt) => patch(entry.id, { alt })}
                   placeholder="Who or what is in it, and where"
                 />
@@ -312,8 +314,8 @@ export function PhotoBatchUpload({
           {missingAlt.length ? (
             <Notice tone="warning">
               <p>
-                Add alt text to {missingAlt.length === 1 ? "1 photo" : `${missingAlt.length} photos`} before they can be added. It tells
-                people who can&apos;t see the picture what it shows.
+                Describe {missingAlt.length === 1 ? "1 photo" : `${missingAlt.length} photos`} before they can be added. The
+                description is read aloud to blind visitors and used by Google.
               </p>
               <ul className="mt-2 flex flex-wrap gap-1.5">
                 {missingAlt.slice(0, 12).map((e) => (
@@ -341,7 +343,7 @@ export function PhotoBatchUpload({
                 : failed.length
                   ? `${failed.length} failed: try again or take ${failed.length === 1 ? "it" : "them"} out.`
                   : missingAlt.length
-                    ? "Waiting for alt text."
+                    ? "Waiting for descriptions."
                     : "Ready."}
             </span>
           </div>

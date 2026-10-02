@@ -34,6 +34,6 @@ export function describePath(key: ContentKey, path: string) {
     .split(".")
     .filter(Boolean)
     .filter((p) => !["src", "url"].includes(p))
-    .map((p) => (/^\d+$/.test(p) ? `item ${Number(p) + 1}` : p));
+    .map((p) => (/^\d+$/.test(p) ? `item ${Number(p) + 1}` : p === "alt" ? "description" : p));
   return [CONTENT_LABELS[key], ...parts].join(", ");
 }

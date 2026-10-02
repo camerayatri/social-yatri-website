@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-import { SITE } from "@/lib/content";
+import { getContent } from "@/lib/cms/get-content";
 import { DEFAULT_DESCRIPTION } from "@/lib/seo";
 
 /**
@@ -11,11 +11,16 @@ import { DEFAULT_DESCRIPTION } from "@/lib/seo";
  * rather than a standalone window with no way back or to share a link.
  * The colours are the paper the site is printed on, and the icons are the
  * same files `app/icon.png` and `app/apple-icon.png` serve as the favicon.
+ *
+ * The name is the one set in the admin. Like the sitemap, this reads the
+ * cached content, so a rename shows here on the next request after the save;
+ * the description is the site-wide one the root layout's metadata uses.
  */
-export default function manifest(): MetadataRoute.Manifest {
+export default async function manifest(): Promise<MetadataRoute.Manifest> {
+  const { site } = await getContent();
   return {
-    name: SITE.name,
-    short_name: SITE.name,
+    name: site.name,
+    short_name: site.name,
     description: DEFAULT_DESCRIPTION,
     start_url: "/",
     display: "browser",

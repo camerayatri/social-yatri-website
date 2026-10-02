@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { contentRevisions, loadContent, restoreContent, saveContent } from "@/lib/cms/actions/content";
 import { describePath } from "@/lib/cms/labels";
@@ -29,6 +29,14 @@ import { Button, Notice, formatWhen } from "./ui";
  * is sent, the save itself, field errors from either side, the conflict when
  * someone else saved first, and the history panel with restore. Each form
  * saves its own document; a page can stack several.
+ *
+ * Some documents have rules that are plain before a save is tried: the
+ * showreel's spiral holds six to twelve clips, a photograph without a
+ * description can't go on the site. `saveBlockedReason` takes the document as
+ * edited and returns why it can't be saved yet (or null). While it says
+ * something, Save is off (by pointer, Enter and Cmd/Ctrl+S alike) and the
+ * reason sits in the save bar beside the button, so it is in view wherever
+ * the page is scrolled.
  */
 
 export type Path = (string | number)[];
@@ -85,12 +93,15 @@ export default function EditorForm<K extends ContentKey>({
   initial,
   title,
   lead,
+  saveBlockedReason,
   children,
 }: {
   docKey: K;
   initial: DocState<K>;
   title: ReactNode;
   lead?: ReactNode;
+  /** Why the document as edited can't be saved yet, finishing "Save is off: ", or null when it can. */
+  saveBlockedReason?: (value: ContentDocs[K]) => ReactNode;
   children: (form: EditorFormApi<ContentDocs[K]>) => ReactNode;
 }) {
   const router = useRouter();
@@ -102,8 +113,11 @@ export default function EditorForm<K extends ContentKey>({
   const [history, setHistory] = useState<RevisionSummary[] | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
+  const blockedId = useId();
 
   const dirty = useMemo(() => JSON.stringify(value) !== JSON.stringify(saved), [value, saved]);
+  const blocked = saveBlockedReason?.(value) || null;
+  const canSave = dirty && !blocked && status.kind !== "saving";
 
   useEffect(() => {
     if (!dirty) return;
@@ -202,12 +216,12 @@ export default function EditorForm<K extends ContentKey>({
       noValidate
       onSubmit={(e) => {
         e.preventDefault();
-        if (dirty) void save();
+        if (canSave) void save();
       }}
       onKeyDown={(e) => {
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s") {
           e.preventDefault();
-          if (dirty) void save();
+          if (canSave) void save();
         }
       }}
       className="rounded-[14px] border border-ink/12 bg-white/55"
@@ -269,11 +283,21 @@ export default function EditorForm<K extends ContentKey>({
               <Button size="sm" onClick={reload}>
                 Load theirs (drops your changes)
               </Button>
-              <Button size="sm" variant="danger" onClick={() => save(status.version)}>
+              <Button size="sm" variant="danger" onClick={() => save(status.version)} disabled={Boolean(blocked)}>
                 Save mine over theirs
               </Button>
             </span>
           </Notice>
+        ) : null}
+        {blocked && dirty ? (
+          <div
+            id={blockedId}
+            role="status"
+            className="rounded-[10px] border border-[#b88a00]/45 bg-[#fff3cc] px-4 py-2.5 text-[14px] text-[#5a4300]"
+          >
+            <span className="font-medium">Save is off: </span>
+            {blocked}
+          </div>
         ) : null}
         {status.kind === "error" ? (
           <Notice tone="error">
@@ -321,7 +345,13 @@ export default function EditorForm<K extends ContentKey>({
             >
               Discard
             </Button>
-            <Button size="sm" type="submit" variant="primary" disabled={!dirty || status.kind === "saving"}>
+            <Button
+              size="sm"
+              type="submit"
+              variant="primary"
+              disabled={!canSave}
+              aria-describedby={blocked && dirty ? blockedId : undefined}
+            >
               {status.kind === "saving" ? "Saving…" : "Save"}
             </Button>
           </div>
