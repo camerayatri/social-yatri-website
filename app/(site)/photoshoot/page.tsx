@@ -5,6 +5,8 @@ import { orderedShoots, shootTotal } from "@/lib/cms/derive";
 import { listOf, writtenFor } from "@/lib/seo";
 import SectionHead from "@/components/ui/section-head";
 import ShootStrips from "@/components/work/shoot-strips";
+import JsonLd from "@/components/seo/json-ld";
+import { photoshootCollection } from "@/lib/structured-data";
 
 /*
  * Kolkata is where the studio is, not where these were shot: the wedding set
@@ -21,12 +23,15 @@ const WRITTEN_FOR = {
   labels: ["Wedding photography", "Interior photography", "Events and conferences", "Studio family portraits", "Fitness and athletes", "Hotels and resorts"],
 };
 
+/** The page's title, which its structured data names it by too. */
+const TITLE = "Photoshoots: Weddings, Interiors & Events";
+
 export async function generateMetadata(): Promise<Metadata> {
   const { site, shoots } = await getContent();
   const total = shootTotal(shoots);
   const facts = { name: site.name, labels: orderedShoots(shoots).map((shoot) => shoot.label) };
   return {
-    title: "Photoshoots: Weddings, Interiors & Events",
+    title: TITLE,
     description: writtenFor(
       facts,
       WRITTEN_FOR,
@@ -47,9 +52,10 @@ export async function generateMetadata(): Promise<Metadata> {
  * page: one strip per shoot, every frame in it, nothing held back.
  */
 export default async function PhotoshootPage() {
-  const { photoshoot, shoots } = await getContent();
+  const { photoshoot, shoots, site } = await getContent();
   return (
     <main className="text-ink">
+      <JsonLd data={photoshootCollection(TITLE, site.name, shoots)} />
       <section className="px-[var(--gutter)] pt-[calc(var(--corner)+96px)] pb-[2em]">
         <SectionHead
           marker={photoshoot.sign}

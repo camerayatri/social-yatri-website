@@ -113,7 +113,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  const { site } = await getContent();
+  const { site, services } = await getContent();
   return (
     <html
       lang="en"
@@ -126,7 +126,7 @@ export default async function RootLayout({
       */}
       <body className="bg-paper text-ink font-sans text-[length:var(--size-font)] leading-[1.4] font-medium antialiased">
         {/* Who the studio is and where, once for the whole site. */}
-        <JsonLd data={siteGraph(site)} />
+        <JsonLd data={siteGraph(site, services)} />
         {/*
           The site's chrome (loader, Lenis, cursor, grain, transition, header
           and footer) lives in components/site-shell.tsx, applied by the

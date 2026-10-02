@@ -10,8 +10,8 @@
  * in structured data is shown to people as fact in the results page.
  */
 
-import { serviceId } from "./cms/derive";
-import type { ServiceDoc, SiteDoc, WorkDoc } from "./cms/schema";
+import { orderedShoots, serviceId, workCover } from "./cms/derive";
+import type { ContentDocs, ServiceDoc, SiteDoc, WorkDoc } from "./cms/schema";
 import { DEFAULT_DESCRIPTION, GEO, MAP_CID_URL, MAP_URL, SITE_URL, absoluteUrl } from "./seo";
 
 /*
@@ -29,6 +29,26 @@ const serviceNodeId = (service: Pick<ServiceDoc, "name">) => `${serviceUrl(servi
 
 /** The city the studio works from, as every service states it. */
 const KOLKATA = { "@type": "City", name: "Kolkata" } as const;
+
+/**
+ * The page a block describes, tied to the website and the business. Used for
+ * the pages whose kind schema.org has a name for: the work wall and the
+ * photography are collections, /studio is about the studio, /contact is how
+ * to reach it.
+ */
+function webPage(type: "CollectionPage" | "AboutPage" | "ContactPage", path: string, name: string, extra?: object) {
+  return {
+    "@context": "https://schema.org",
+    "@type": type,
+    "@id": `${abs(path)}#webpage`,
+    url: abs(path),
+    name,
+    inLanguage: "en-IN",
+    isPartOf: { "@id": WEBSITE_ID },
+    about: { "@id": ORG_ID },
+    ...extra,
+  };
+}
 
 /*
  * The address as it was written when the fields below were taken apart from
@@ -49,7 +69,7 @@ const ADDRESS_WRITTEN = "91/6, Beltala Road, Bhawanipur, Kolkata 700026";
  * professional service. `sameAs` lists only profiles that exist: the
  * Instagram account when its handle is filled in, and the Maps listing.
  */
-export function siteGraph(site: SiteDoc) {
+export function siteGraph(site: SiteDoc, services: Pick<ServiceDoc, "name">[]) {
   const instagram = site.instagram ? `https://instagram.com/${site.instagram}` : null;
   const samePlace = site.mapUrl === MAP_URL;
   const map = samePlace ? MAP_CID_URL : site.mapUrl;
@@ -62,12 +82,36 @@ export function siteGraph(site: SiteDoc) {
         "@id": ORG_ID,
         name: site.name,
         url: SITE_URL,
-        logo: abs("/icon.png"),
+        // The mark as `app/icon.png` serves it, 512 pixels square. Google
+        // asks for at least 112 and reads the size from here.
+        logo: { "@type": "ImageObject", url: abs("/icon.png"), contentUrl: abs("/icon.png"), width: 512, height: 512 },
         image: abs("/opengraph-image"),
         description: DEFAULT_DESCRIPTION,
         slogan: site.tagline,
         telephone: site.phoneHref.replace("tel:", ""),
         email: site.email,
+        /*
+         * The same number and address, said as the line a customer uses. No
+         * hours and no languages: the client has given neither.
+         */
+        contactPoint: {
+          "@type": "ContactPoint",
+          contactType: "customer service",
+          telephone: site.phoneHref.replace("tel:", ""),
+          email: site.email,
+          areaServed: "IN",
+        },
+        // What the studio does, in the services list's own words, and each
+        // one as an offer pointing at the `Service` on its own page.
+        knowsAbout: services.map((service) => service.name),
+        hasOfferCatalog: {
+          "@type": "OfferCatalog",
+          name: "Services",
+          itemListElement: services.map((service) => ({
+            "@type": "Offer",
+            itemOffered: { "@id": serviceNodeId(service) },
+          })),
+        },
         // `site.address`, taken apart into the fields an address has; a
         // changed address is stated whole until someone takes it apart here.
         address:
@@ -106,8 +150,8 @@ export function siteGraph(site: SiteDoc) {
 /**
  * One service as its own page states it: what it is, who provides it and
  * where. Its `@id` is the page's address plus #service, so anything else
- * that names the service can point at this node rather than describe it
- * again.
+ * that names the service (the business's offer catalogue does) can point at
+ * this node rather than describe it again.
  */
 function serviceNode(service: ServiceDoc) {
   return {
@@ -169,4 +213,74 @@ export function servicePage(service: ServiceDoc) {
       },
     ],
   };
+}
+
+/**
+ * The work wall: a collection page whose list is the categories, in the
+ * wall's order, each with the cover the wall shows for it.
+ */
+export function workCollection(name: string, docs: Pick<ContentDocs, "works" | "reels">) {
+  return webPage("CollectionPage", "/work", name, {
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: docs.works.length,
+      itemListElement: docs.works.map((work, i) => {
+        const cover = workCover(work, docs.reels);
+        return {
+          "@type": "ListItem",
+          position: i + 1,
+          name: work.title,
+          url: abs(`/work/${work.slug}`),
+          image: {
+            "@type": "ImageObject",
+            contentUrl: abs(cover.src),
+            caption: cover.alt,
+            ...(cover.w && cover.h ? { width: cover.w, height: cover.h } : null),
+          },
+        };
+      }),
+    },
+  });
+}
+
+/**
+ * The photography: a collection page listing each shoot as a collection of
+ * its frames. The page says the studio shot every one ("Every frame we
+ * shot."), which is what `creator` and `creditText` state. There is no
+ * licence to point at, so none is claimed.
+ */
+export function photoshootCollection(name: string, studio: string, shoots: ContentDocs["shoots"]) {
+  return webPage("CollectionPage", "/photoshoot", name, {
+    mainEntity: {
+      "@type": "ItemList",
+      itemListElement: orderedShoots(shoots).map((shoot, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        item: {
+          "@type": "Collection",
+          name: shoot.label,
+          collectionSize: shoot.photos.length,
+          hasPart: shoot.photos.map((photo) => ({
+            "@type": "ImageObject",
+            contentUrl: abs(photo.src),
+            caption: photo.alt,
+            width: photo.w,
+            height: photo.h,
+            creator: { "@id": ORG_ID },
+            creditText: studio,
+          })),
+        },
+      })),
+    },
+  });
+}
+
+/** /studio, which is about the studio. */
+export function aboutPage(name: string) {
+  return webPage("AboutPage", "/studio", name);
+}
+
+/** /contact, which is how to reach it. Ready for the contact page to print. */
+export function contactPage(name: string) {
+  return webPage("ContactPage", "/contact", name);
 }

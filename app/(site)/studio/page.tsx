@@ -5,6 +5,8 @@ import { writtenFor } from "@/lib/seo";
 import KolkataSection from "@/components/sections/kolkata";
 import Clients from "@/components/sections/clients";
 import MarqueeStrip from "@/components/sections/marquee-strip";
+import JsonLd from "@/components/seo/json-ld";
+import { aboutPage } from "@/lib/structured-data";
 
 /*
  * The figures are the two case studies' own, as the clients section prints
@@ -19,11 +21,14 @@ const CLAIMS_WRITTEN = [
   { name: "EnvyMe Fashion", claim: ["From 12K to", "4.1 lakh+ followers."] },
 ];
 
+/** The page's title, which its structured data names it by too. */
+const TITLE = "Kolkata Content Studio & Client Results";
+
 export async function generateMetadata(): Promise<Metadata> {
   const { clients } = await getContent();
   const claims = clients.cases.map((study) => ({ name: study.name, claim: study.claim }));
   return {
-    title: "Kolkata Content Studio & Client Results",
+    title: TITLE,
     description: writtenFor(
       claims,
       CLAIMS_WRITTEN,
@@ -41,6 +46,7 @@ export default async function StudioPage() {
   const { kolkata, marquee, clients } = await getContent();
   return (
     <main>
+      <JsonLd data={aboutPage(TITLE)} />
       <KolkataSection kolkata={kolkata} titleAs="h1" marker="Studio" surface="paper" />
 
       <MarqueeStrip phrases={marquee} />
