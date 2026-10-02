@@ -14,6 +14,7 @@
 
 import type { ShootKey } from "./gallery";
 import { REELS, type Reel, type ReelKey } from "./reels";
+import { MAP_URL } from "./seo";
 
 export const SITE = {
   name: "Social Yatri",
@@ -35,6 +36,12 @@ export const SITE = {
   phone: "+91 97073 44375",
   phoneHref: "tel:+919707344375",
   address: "91/6, Beltala Road, Bhawanipur, Kolkata 700026",
+  /*
+   * The studio's own Google Maps listing, as the client shares it. It used to
+   * be a search for the address, which lands on a pin for the street rather
+   * than on the business, with its reviews and its directions.
+   */
+  mapUrl: MAP_URL,
   /*
    * The handle alone, without the @ and without the URL: the profile address is
    * built from it below, so the footer and the contact page both link the
@@ -69,11 +76,7 @@ export const DIRECT: { label: string; value: string; href: string | null }[] = [
   { label: "LinkedIn", value: SITE.linkedin, href: SITE.linkedin ? `https://www.linkedin.com/company/${SITE.linkedin}` : null },
   { label: "Email", value: SITE.email, href: `mailto:${SITE.email}` },
   { label: "Phone", value: SITE.phone, href: SITE.phoneHref },
-  {
-    label: "Address",
-    value: SITE.address,
-    href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${SITE.address}, India`)}`,
-  },
+  { label: "Address", value: SITE.address, href: SITE.mapUrl },
 ].filter((entry) => entry.value !== "");
 
 export const NAV = [
