@@ -95,3 +95,34 @@ export function orderedShoots(shoots: ContentDocs["shoots"]) {
     return shoot ? [{ key, ...shoot }] : [];
   });
 }
+
+/** The service whose page lives at /services/<slug>, by the same id its anchor on /services carries. */
+export function findService<S extends { name: string }>(services: S[], slug: string) {
+  return services.find((service) => serviceId(service) === slug);
+}
+
+/**
+ * The services either side of one, wrapping round at both ends, for the way
+ * on at the foot of a service page. Null for a list of one, where the only
+ * neighbour would be the page itself.
+ */
+export function serviceNeighbours<S extends { name: string }>(services: S[], slug: string) {
+  const index = services.findIndex((service) => serviceId(service) === slug);
+  if (index < 0 || services.length < 2) return null;
+  return {
+    prev: services[(index - 1 + services.length) % services.length],
+    next: services[(index + 1) % services.length],
+  };
+}
+
+/**
+ * The work categories that are plainly the same thing as a service: a
+ * category whose slug is the service's own id, which is to say one with the
+ * same name. Nothing in the content ties a service to work any other way, so
+ * nothing else is guessed at: "Branding" is not matched to "Clothing" because
+ * a clothing brand was branded.
+ */
+export function relatedWorks(service: { name: string }, works: WorkDoc[]) {
+  const id = serviceId(service);
+  return works.filter((work) => work.slug === id);
+}

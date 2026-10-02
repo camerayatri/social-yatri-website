@@ -23,6 +23,13 @@ const WEBSITE_ID = `${SITE_URL}/#website`;
 
 const abs = absoluteUrl;
 
+/** A service's own page, and the identifier its `Service` node carries everywhere it is mentioned. */
+export const serviceUrl = (service: Pick<ServiceDoc, "name">) => abs(`/services/${serviceId(service)}`);
+const serviceNodeId = (service: Pick<ServiceDoc, "name">) => `${serviceUrl(service)}#service`;
+
+/** The city the studio works from, as every service states it. */
+const KOLKATA = { "@type": "City", name: "Kolkata" } as const;
+
 /*
  * The address as it was written when the fields below were taken apart from
  * it, and the map link the CID and the pin belong to. The parts, the pin and
@@ -97,8 +104,28 @@ export function siteGraph(site: SiteDoc) {
 }
 
 /**
+ * One service as its own page states it: what it is, who provides it and
+ * where. Its `@id` is the page's address plus #service, so anything else
+ * that names the service can point at this node rather than describe it
+ * again.
+ */
+function serviceNode(service: ServiceDoc) {
+  return {
+    "@type": "Service",
+    "@id": serviceNodeId(service),
+    name: service.name,
+    serviceType: service.name,
+    description: `${service.desc} ${service.body[0]}`,
+    url: serviceUrl(service),
+    image: abs(service.cover.src),
+    provider: { "@id": ORG_ID },
+    areaServed: KOLKATA,
+  };
+}
+
+/**
  * The services page's list, one `Service` per stop, each pointing at its own
- * section of the page and at the business that provides it.
+ * page and at the business that provides it.
  */
 export function servicesList(services: ServiceDoc[]) {
   return {
@@ -108,15 +135,7 @@ export function servicesList(services: ServiceDoc[]) {
     itemListElement: services.map((service, i) => ({
       "@type": "ListItem",
       position: i + 1,
-      item: {
-        "@type": "Service",
-        name: service.name,
-        serviceType: service.name,
-        description: `${service.desc} ${service.body[0]}`,
-        url: abs(`/services#${serviceId(service)}`),
-        image: abs(service.cover.src),
-        provider: { "@id": ORG_ID },
-      },
+      item: serviceNode(service),
     })),
   };
 }
@@ -130,6 +149,24 @@ export function workBreadcrumb(work: Pick<WorkDoc, "slug" | "title">) {
       { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
       { "@type": "ListItem", position: 2, name: "Work", item: abs("/work") },
       { "@type": "ListItem", position: 3, name: work.title, item: abs(`/work/${work.slug}`) },
+    ],
+  };
+}
+
+/** A service page: the service, and the trail Home, Services, the service. */
+export function servicePage(service: ServiceDoc) {
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      serviceNode(service),
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: SITE_URL },
+          { "@type": "ListItem", position: 2, name: "Services", item: abs("/services") },
+          { "@type": "ListItem", position: 3, name: service.name, item: serviceUrl(service) },
+        ],
+      },
     ],
   };
 }

@@ -62,6 +62,30 @@ export function writtenFor(facts: unknown, writtenAgainst: unknown, written: str
   return JSON.stringify(facts) === JSON.stringify(writtenAgainst) ? written : rebuilt();
 }
 
+/**
+ * A description made of the content's own sentences, in order, as many whole
+ * ones as fit in `max` characters (about what a results page shows before it
+ * cuts a snippet off). The first sentence is always kept, so a description is
+ * never empty.
+ *
+ * The client writes in short punches followed by one long sentence ("People
+ * trust people." and then the explanation), so stopping at the limit can leave
+ * a description of forty characters that says nothing. One that short takes
+ * the next sentence anyway while the whole stays under `soft`: a results page
+ * then trims the end of the explanation, after the promise has been read,
+ * which is a better snippet than the promise alone.
+ */
+export function sentencesWithin(paragraphs: string[], max = 160, soft = 200) {
+  const sentences = paragraphs.flatMap((paragraph) => paragraph.split(/(?<=[.!?])\s+/)).filter(Boolean);
+  let out = sentences[0] ?? "";
+  for (const sentence of sentences.slice(1)) {
+    const next = `${out} ${sentence}`;
+    if (next.length > max && (out.length >= 120 || next.length > soft)) break;
+    out = next;
+  }
+  return out;
+}
+
 /** "a, b and c", for the descriptions that list what the content holds. */
 export function listOf(items: string[]) {
   return items.length < 2 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;

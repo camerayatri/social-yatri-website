@@ -46,7 +46,7 @@ export default async function HomePage() {
           no: service.no,
           name: service.name,
           tag: service.tag,
-          href: `/services#${serviceId(service)}`,
+          href: `/services/${serviceId(service)}`,
           cover: service.cover.src,
         }))}
       />

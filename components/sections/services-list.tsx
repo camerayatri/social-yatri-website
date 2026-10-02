@@ -41,7 +41,7 @@ export default function ServicesList({
         {services.map((service) => (
           <TransitionLink
             key={service.no}
-            // Straight to that service's own section on /services.
+            // Straight to that service's own page.
             href={service.href}
             className="rule group relative grid grid-cols-[4em_1fr_10em] items-baseline gap-[1.5em] border-b py-[1.1em] transition-[padding] duration-500 hover:pl-[1em] max-tablet:grid-cols-[3em_1fr]"
             style={{ transitionTimingFunction: "var(--ease-brand)" }}
