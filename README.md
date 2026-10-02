@@ -242,9 +242,6 @@ Neon Postgres and uploads on Vercel Blob. Every variable it reads is described i
 
 ## What still needs doing
 
-- **The contact form has no backend.** `onSubmit` in
-  `components/sections/contact-form.tsx` only shows the confirmation. Wire it to a
-  route handler or a form service before launch.
 - **The reel frames are placeholders**, the four architecture photographs already in
   `public/img`, cycled. Each ride names its own `frame` in `lib/content.ts`, so
   swapping in real stills is one line per ride and no component change.
