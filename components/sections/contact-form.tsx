@@ -14,7 +14,9 @@ import BubbleButton from "@/components/effects/bubble-button";
  * There is no endpoint behind it yet: `onSubmit` only shows the confirmation.
  * Wire it to a route handler or a form service before launch.
  */
-export default function ContactForm() {
+// Placeholder for the contact-form branch, which reads `connect` instead of the constant.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function ContactForm(_props: { connect?: import("@/lib/cms/schema").ConnectDoc }) {
   const [sent, setSent] = useState(false);
 
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
