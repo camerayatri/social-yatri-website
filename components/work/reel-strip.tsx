@@ -5,7 +5,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Reel from "./reel";
 import type { Reel as ReelData } from "@/lib/reels";
 import { useMediaViewer, type ViewerItem } from "@/components/effects/media-viewer";
-import { setClipSound, warmClips } from "@/lib/clip";
+import { setClipSound } from "@/lib/clip";
 
 /**
  * Cards whose poster is in the server's markup: enough to fill the first
@@ -145,14 +145,8 @@ export default function ReelStrip({
         </div>
       </div>
 
-      {/*
-        The pointer coming onto the strip is the first sign a clip is about to
-        be wanted, so that is when the connection to the media store is
-        opened.
-      */}
       <div
         ref={trackRef}
-        onPointerEnter={warmClips}
         className="carousel-track flex gap-[1.5vw] overflow-x-auto px-[var(--gutter)]"
       >
         {reels.map((reel, i) => (
@@ -161,6 +155,7 @@ export default function ReelStrip({
               reel={reel}
               soundRef={soundRef}
               showPoster={near.has(i)}
+              eager={i < POSTERS_UP_FRONT}
               onOpen={() => openAt(i)}
               className="bg-ink h-full w-auto max-w-none"
             />

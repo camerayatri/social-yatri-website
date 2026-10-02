@@ -5,7 +5,7 @@ import Image from "next/image";
 
 import type { Photo } from "@/lib/content";
 import type { Reel } from "@/lib/reels";
-import { pauseClip, playClip, useClip, warmClips } from "@/lib/clip";
+import { pauseClip, playClip, useClip } from "@/lib/clip";
 import Buffering from "./buffering";
 import Veil from "./veil";
 
@@ -51,7 +51,6 @@ export default function WorkCard({
   const onEnter = useCallback((event: React.PointerEvent) => {
     if (event.pointerType === "touch") return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    warmClips();
     if (ref.current) void playClip(ref.current, false);
   }, []);
 

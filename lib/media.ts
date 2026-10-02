@@ -45,12 +45,6 @@ export function media(path: string): string {
 }
 
 /**
- * The store's origin, for the connection hints, or null when media is served
- * from the deployment itself and there is no second origin to warm.
- */
-export const MEDIA_ORIGIN: string | null = BASE ? new URL(BASE).origin : null;
-
-/**
  * The silent hover preview of a reel, or null when it has none.
  *
  * A card that plays on hover plays muted until a sound switch is on, and for

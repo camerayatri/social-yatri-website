@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState, type RefObject } from "react";
-import { preconnect } from "react-dom";
 
-import { MEDIA_ORIGIN, previewSrc } from "@/lib/media";
+import { previewSrc } from "@/lib/media";
 import { claimPlayback } from "@/lib/solo-video";
 
 /**
@@ -90,16 +89,6 @@ function observer() {
     }
   });
   return offscreen;
-}
-
-/**
- * Open the connection to the store before the first clip is asked for. Called
- * as the pointer comes onto a strip and as a finger lands on a card, which is
- * a few hundred milliseconds before the hover or the click that wants a file:
- * about the time a fresh connection takes to set up on a phone network.
- */
-export function warmClips() {
-  if (MEDIA_ORIGIN) preconnect(MEDIA_ORIGIN);
 }
 
 /**

@@ -7,7 +7,7 @@ import { getImageProps } from "next/image";
 
 import type { ShowreelClip } from "@/lib/reels";
 import { gsap } from "@/lib/gsap";
-import { pauseClip, playClip, useClip, warmClips } from "@/lib/clip";
+import { pauseClip, playClip, useClip } from "@/lib/clip";
 import { useMediaViewer, type ViewerItem } from "@/components/effects/media-viewer";
 import Buffering from "@/components/work/buffering";
 import Veil from "@/components/work/veil";
@@ -232,9 +232,7 @@ export default function SpiralGallery({
   );
 
   return (
-    // The pointer arriving on the spiral opens the connection to the media
-    // store, ahead of the hover that will want a clip from it.
-    <div ref={root} onPointerEnter={warmClips} className="relative h-dvh w-full overflow-hidden">
+    <div ref={root} className="relative h-dvh w-full overflow-hidden">
       <div
         className="absolute inset-0"
         style={{ perspective: "1400px", perspectiveOrigin: "50% 50%" }}
@@ -381,7 +379,6 @@ function ShowreelCard({
       onPointerLeave={(event) => {
         if (event.pointerType !== "touch") stop();
       }}
-      onPointerDown={warmClips}
       // The keyboard's hover; a tap's focus is not visible and does not count.
       onFocus={(event) => {
         if (event.currentTarget.matches(":focus-visible")) start();

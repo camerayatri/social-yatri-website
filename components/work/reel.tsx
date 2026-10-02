@@ -11,7 +11,7 @@ import {
 import { getImageProps } from "next/image";
 
 import type { Reel as ReelData } from "@/lib/reels";
-import { pauseClip, playClip, useClip, warmClips } from "@/lib/clip";
+import { pauseClip, playClip, useClip } from "@/lib/clip";
 import { slideSizes } from "./carousel";
 import Buffering from "./buffering";
 import Veil from "./veil";
@@ -141,7 +141,6 @@ export default function Reel({
       onPointerLeave={(event) => {
         if (event.pointerType !== "touch") stop();
       }}
-      onPointerDown={warmClips}
       // The keyboard's hover. A tap focuses the button too, and must not
       // start the card under the finger, so only a visible focus counts.
       onFocus={(event) => {
