@@ -1,0 +1,46 @@
+/*
+ * The admin's few global rules, scoped to pages that carry `[data-cms]` so they
+ * cannot leak onto the public site even if this sheet stays loaded after a
+ * client-side navigation.
+ *
+ * The site hides scrollbars because Lenis owns scrolling there. The admin has
+ * no Lenis and long forms, so it gets them back: a scrollbar is how people
+ * know how much form is left.
+ */
+html:has([data-cms]) {
+  scrollbar-width: auto;
+}
+
+html:has([data-cms]) body::-webkit-scrollbar,
+html:has([data-cms]) body ::-webkit-scrollbar {
+  display: initial;
+}
+
+/* Quieter focus ring for dense forms, still the brand yellow. */
+[data-cms] :focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* Native form controls in the admin take the page's type, not the UA's. */
+[data-cms] input,
+[data-cms] textarea,
+[data-cms] select,
+[data-cms] button {
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+[data-cms] .cms-label {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1.3;
+}
+
+/* A drag handle row being dragged over. */
+[data-cms] [data-drop-target="true"] {
+  box-shadow: inset 0 3px 0 0 var(--accent);
+}

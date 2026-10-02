@@ -209,6 +209,37 @@ The spiral resolves its pin length from `window.innerHeight` in a function, and
 is also its finished state, so `prefers-reduced-motion` leaves the page complete rather
 than half-built.
 
+## Admin
+
+A small content admin for the studio's staff lives in `app/cms`, with its data in
+Neon Postgres and uploads on Vercel Blob. Every variable it reads is described in
+`.env.example`.
+
+- **Opening it.** The admin is served at `/<ADMIN_PATH>`, where `ADMIN_PATH` is a
+  server-only environment variable. The repository is public, so the address is
+  never written in code: `/cms` itself always returns the site's 404, and an unset
+  `ADMIN_PATH` means there is no admin at all. Sign in at `/<ADMIN_PATH>/login`.
+- **First run.** With `DATABASE_URL` in `.env.local` (`vercel env pull .env.local`):
+
+  ```bash
+  npm run db:migrate   # applies db/migrations/*.sql not yet applied
+  npm run db:seed      # writes the shipped content for keys with no row; never overwrites
+  npm run admin:create -- --email you@example.com --name "Your Name"
+  ```
+
+  `admin:create` prompts for the password (hidden), or reads it from stdin or
+  `ADMIN_PASSWORD`; it never takes one as an argument. Add `--reset` to set a new
+  password on an existing account. Everyone after the first is added from the
+  admin's Maintainers page with a temporary password.
+- **Migrations** are plain SQL files in `db/migrations`, applied in name order and
+  recorded in `schema_migrations`. Add a new numbered file; never edit an applied one.
+- **Checks.** `npm run cms:check` proves every shipped default passes its schema
+  (`lib/cms/schema.ts`) unchanged; run it after changing anything in `lib/content.ts`,
+  `lib/reels.ts` or `lib/gallery.ts`. `npm run cms:check-auth` checks password
+  hashing, the session cookie and `ADMIN_PATH` validation.
+- **Without a database** the site builds and runs on the shipped content, and the
+  admin's sign-in page says it is not connected.
+
 ## What still needs doing
 
 - **The contact form has no backend.** `onSubmit` in
