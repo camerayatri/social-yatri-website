@@ -28,6 +28,19 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
+/*
+ * Without JavaScript nothing on the site would lift the opening film's panel
+ * (it is drawn by the server and taken away by the script) or uncover the
+ * revealed copy, so this page would be a still of a road. Here, where the
+ * page is how people reach the studio, a stylesheet that only a browser with
+ * scripting off applies takes both away (and shows the header's mark, which
+ * the loader would have handed over), and the form says how else to get
+ * in touch. Scoped to this page; the same two rules in the root layout would
+ * do it for the whole site.
+ */
+const NO_SCRIPT_CSS =
+  "div:has(> [data-loader-panel]){display:none!important}[data-reveal],[data-header-logo]{visibility:visible!important}";
+
 /**
  * Connect.
  *
@@ -49,6 +62,9 @@ export default async function ContactPage() {
   const { site, connect } = await getContent();
   return (
     <main>
+      <noscript>
+        <style>{NO_SCRIPT_CSS}</style>
+      </noscript>
       <JsonLd data={contactPage(site, TITLE, describe(site, connect.question))} />
       <section className="text-ink px-[var(--gutter)] pt-[calc(var(--corner)+96px)] pb-[7em]">
         {/*
