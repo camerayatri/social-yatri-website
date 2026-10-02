@@ -3,7 +3,8 @@ import { join } from "node:path";
 import { ImageResponse } from "next/og";
 
 import OgWordmark, { OG_COLORS } from "@/components/logo/og-wordmark";
-import { WORKS, workCover } from "@/lib/content";
+import { getContent } from "@/lib/cms/get-content";
+import { workCover } from "@/lib/cms/derive";
 
 /*
  * A work page's share image: the category's own cover beside its name.
@@ -18,9 +19,15 @@ export const alt = "A category of Social Yatri's work, its cover beside the cate
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-/* Built for every category at build time, like the pages they belong to. */
-export function generateStaticParams() {
-  return WORKS.map((work) => ({ slug: work.slug }));
+/*
+ * Built for every category at build time, like the pages they belong to, and
+ * on first request for one added in the admin since.
+ */
+export const dynamicParams = true;
+
+export async function generateStaticParams() {
+  const { works } = await getContent();
+  return works.map((work) => ({ slug: work.slug }));
 }
 
 /* A failed fetch fails the build rather than drawing a broken card. */
@@ -34,15 +41,24 @@ const PANEL = { width: 504, height: 630 };
 
 export default async function Image({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const work = WORKS.find((item) => item.slug === slug);
+  const { works, reels } = await getContent();
+  const work = works.find((item) => item.slug === slug);
   if (!work) return new Response("Not found", { status: 404 });
 
-  const cover = workCover(work);
-  const data = cover.src.startsWith("https://")
-    ? await fetchCover(cover.src)
-    : await readFile(join(process.cwd(), "public", cover.src));
-  const type = cover.src.endsWith(".png") ? "image/png" : "image/jpeg";
-  const src = `data:${type};base64,${data.toString("base64")}`;
+  const cover = workCover(work, reels);
+  /*
+   * Satori reads JPEG and PNG. The shipped covers are JPEGs; a cover uploaded
+   * in the admin may be WebP or AVIF, and for one of those the panel is left
+   * as plain ink rather than failing the card.
+   */
+  const type = /\.png$/i.test(cover.src) ? "image/png" : /\.jpe?g$/i.test(cover.src) ? "image/jpeg" : null;
+  let src: string | null = null;
+  if (type) {
+    const data = cover.src.startsWith("https://")
+      ? await fetchCover(cover.src)
+      : await readFile(join(process.cwd(), "public", cover.src));
+    src = `data:${type};base64,${data.toString("base64")}`;
+  }
 
   return new ImageResponse(
     (
@@ -72,13 +88,17 @@ export default async function Image({ params }: { params: Promise<{ slug: string
         </div>
 
         {/* A plain <img>: Satori draws no other kind. */}
-        <img
-          src={src}
-          alt=""
-          width={PANEL.width}
-          height={PANEL.height}
-          style={{ objectFit: "cover", objectPosition: cover.focus ?? "50% 50%" }}
-        />
+        {src ? (
+          <img
+            src={src}
+            alt=""
+            width={PANEL.width}
+            height={PANEL.height}
+            style={{ objectFit: "cover", objectPosition: cover.focus ?? "50% 50%" }}
+          />
+        ) : (
+          <div style={{ display: "flex", width: PANEL.width, height: PANEL.height, background: OG_COLORS.ink }} />
+        )}
       </div>
     ),
     size,

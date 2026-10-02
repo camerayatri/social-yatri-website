@@ -46,6 +46,36 @@ export const DEFAULT_TITLE = "Social Yatri · Social Media Marketing Agency in K
 export const DEFAULT_DESCRIPTION =
   "Social Yatri is a social media marketing and content creation agency in Kolkata: reels, UGC videos, branding, ad films, websites and performance marketing.";
 
+/**
+ * A hand-written sentence for as long as the facts it was written about still
+ * stand, and one built from the content once they do not.
+ *
+ * Some descriptions summarise the content in words no template would choose
+ * ("Koliving grew from 300 to 5,000+ followers"), and they are better for it.
+ * But the content is edited in the admin now, and a description that states
+ * last month's figures is worse than a plain one. So each such sentence is
+ * filed with the facts it states, as they stood when it was written; while the
+ * content still says the same, the sentence is used, and the moment an edit
+ * changes one of those facts the description is rebuilt from the content.
+ */
+export function writtenFor(facts: unknown, writtenAgainst: unknown, written: string, rebuilt: () => string) {
+  return JSON.stringify(facts) === JSON.stringify(writtenAgainst) ? written : rebuilt();
+}
+
+/** "a, b and c", for the descriptions that list what the content holds. */
+export function listOf(items: string[]) {
+  return items.length < 2 ? (items[0] ?? "") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+/**
+ * A URL on this site from a path, or a full URL as it is. Media lives on the
+ * Blob store and arrives as a full URL, which must not be prefixed again.
+ */
+export function absoluteUrl(path: string) {
+  if (/^https?:\/\//.test(path)) return path;
+  return `${SITE_URL}${path === "/" ? "" : path}`;
+}
+
 /** Where the pin on that listing sits, as Google has it. */
 export const GEO = { latitude: 22.5249488, longitude: 88.3492109 } as const;
 
