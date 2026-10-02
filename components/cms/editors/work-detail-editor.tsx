@@ -12,7 +12,6 @@ import { FieldShell, inputClass } from "../fields/field-shell";
 import { MediaField } from "../fields/media-field";
 import { MultiMediaPicker } from "../fields/multi-media-picker";
 import { ReelGrid, clipFromItem, clipProblem } from "../fields/reel-grid";
-import { BlockSave, SaveBlocker } from "../fields/save-block";
 import { TextField } from "../fields/text-field";
 import { Button, Card, Notice } from "../ui";
 import { DeleteWorkDialog, useRemountAfter, type WorkRowInfo } from "./works-editor";
@@ -71,17 +70,21 @@ export default function WorkDetailEditor({
       </EditorForm>
 
       {reelKey ? (
-        <SaveBlocker>
-          <EditorForm
-            key={`r${reelsKey}`}
-            docKey="reels"
-            initial={reels}
-            title="Clips"
-            lead="The first clip is the cover: the wall plays it on hover and this category's page opens with it. Drag or use the arrows to reorder."
-          >
-            {(form) => <ClipFields form={form} reelKey={reelKey} durations={durations} shared={shared} />}
-          </EditorForm>
-        </SaveBlocker>
+        <EditorForm
+          key={`r${reelsKey}`}
+          docKey="reels"
+          initial={reels}
+          title="Clips"
+          lead="The first clip is the cover: the wall plays it on hover and this category's page opens with it. Drag or use the arrows to reorder."
+          saveBlockedReason={(all) => {
+            const missing = (all[reelKey] ?? []).flatMap((c, i) => (c.alt.trim() ? [] : [i + 1]));
+            return missing.length
+              ? `describe clip${missing.length === 1 ? "" : "s"} ${missing.join(", ")}. The description is read aloud to blind visitors and used by Google.`
+              : null;
+          }}
+        >
+          {(form) => <ClipFields form={form} reelKey={reelKey} durations={durations} shared={shared} />}
+        </EditorForm>
       ) : (
         <Card title="Clips" lead="This category shows one photograph instead of clips.">
           <div className="flex flex-col gap-3">
@@ -278,7 +281,6 @@ function ClipFields({
 }) {
   const [picking, setPicking] = useState(false);
   const clips = form.value[reelKey] ?? [];
-  const missingAlt = clips.map((c, i) => (c.alt.trim() ? null : i + 1)).filter((n): n is number => n !== null);
 
   return (
     <>
@@ -307,11 +309,6 @@ function ClipFields({
       />
       {form.error([reelKey]) ? <p className="text-[13px] text-[#a3271b]">{form.error([reelKey])}</p> : null}
       {form.error([]) ? <p className="text-[13px] text-[#a3271b]">{form.error([])}</p> : null}
-      {missingAlt.length ? (
-        <BlockSave
-          reason={`describe clip${missingAlt.length === 1 ? "" : "s"} ${missingAlt.join(", ")}. The description is read aloud to blind visitors and used by Google.`}
-        />
-      ) : null}
       {picking ? (
         <MultiMediaPicker
           kind="video"

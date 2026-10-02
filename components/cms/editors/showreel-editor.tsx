@@ -6,7 +6,6 @@ import type { ContentDocs } from "@/lib/cms/schema";
 import EditorForm, { type EditorFormApi } from "../editor-form";
 import { MultiMediaPicker } from "../fields/multi-media-picker";
 import { ReelGrid, clipFromItem, clipProblem } from "../fields/reel-grid";
-import { BlockSave, SaveBlocker } from "../fields/save-block";
 import { Button } from "../ui";
 
 /**
@@ -26,16 +25,15 @@ type Clips = ContentDocs["showreel"];
 
 export default function ShowreelEditor({ showreel, durations }: { showreel: DocState<"showreel">; durations: Record<string, number> }) {
   return (
-    <SaveBlocker>
-      <EditorForm
-        docKey="showreel"
-        initial={showreel}
-        title="Spiral clips"
-        lead="The clips that turn in the spiral on the home page, in the order they appear. Each card shows its title."
-      >
-        {(form) => <ShowreelFields form={form} durations={durations} />}
-      </EditorForm>
-    </SaveBlocker>
+    <EditorForm
+      docKey="showreel"
+      initial={showreel}
+      title="Spiral clips"
+      lead="The clips that turn in the spiral on the home page, in the order they appear. Each card shows its title."
+      saveBlockedReason={blockedReason}
+    >
+      {(form) => <ShowreelFields form={form} durations={durations} />}
+    </EditorForm>
   );
 }
 
@@ -43,24 +41,27 @@ function list(numbers: number[]) {
   return numbers.length === 1 ? `clip ${numbers[0]}` : `clips ${numbers.slice(0, -1).join(", ")} and ${numbers.at(-1)}`;
 }
 
+/** Why the spiral can't be saved as it stands, or null. */
+function blockedReason(clips: Clips) {
+  const n = clips.length;
+  const noTitle = clips.flatMap((c, i) => (c.title.trim() ? [] : [i + 1]));
+  const noAlt = clips.flatMap((c, i) => (c.alt.trim() ? [] : [i + 1]));
+  return n < MIN
+    ? `the spiral needs at least ${MIN} clips and has ${n}. Add ${MIN - n} more.`
+    : n > MAX
+      ? `the spiral holds at most ${MAX} clips and has ${n}. Remove ${n - MAX}.`
+      : noTitle.length
+        ? `give ${list(noTitle)} a title.`
+        : noAlt.length
+          ? `describe ${list(noAlt)}.`
+          : null;
+}
+
 function ShowreelFields({ form, durations }: { form: EditorFormApi<Clips>; durations: Record<string, number> }) {
   const [picking, setPicking] = useState(false);
   const clips = form.value;
   const n = clips.length;
   const inRange = n >= MIN && n <= MAX;
-  const noTitle = clips.flatMap((c, i) => (c.title.trim() ? [] : [i + 1]));
-  const noAlt = clips.flatMap((c, i) => (c.alt.trim() ? [] : [i + 1]));
-
-  const reason =
-    n < MIN
-      ? `the spiral needs at least ${MIN} clips and has ${n}. Add ${MIN - n} more.`
-      : n > MAX
-        ? `the spiral holds at most ${MAX} clips and has ${n}. Remove ${n - MAX}.`
-        : noTitle.length
-          ? `give ${list(noTitle)} a title.`
-          : noAlt.length
-            ? `describe ${list(noAlt)}.`
-            : null;
 
   return (
     <>
@@ -101,8 +102,6 @@ function ShowreelFields({ form, durations }: { form: EditorFormApi<Clips>; durat
         errorAt={(i, field) => form.error(field ? [i, field] : [i])}
       />
       {form.error([]) ? <p className="text-[13px] text-[#a3271b]">{form.error([])}</p> : null}
-
-      {reason ? <BlockSave reason={reason} /> : null}
 
       {picking ? (
         <MultiMediaPicker

@@ -11,7 +11,6 @@ import { Thumb } from "../fields/media-thumb";
 import { MultiMediaPicker } from "../fields/multi-media-picker";
 import { PhotoBatchUpload } from "../fields/photo-batch-upload";
 import { MissingAlt, PhotoGrid, photoFromItem, photoProblem } from "../fields/photo-grid";
-import { BlockSave, SaveBlocker } from "../fields/save-block";
 import { SortableGrid } from "../fields/sortable-grid";
 import { TextField } from "../fields/text-field";
 import { Button, Notice } from "../ui";
@@ -75,18 +74,41 @@ export default function PhotoshootEditor({
         }}
       </EditorForm>
 
-      <SaveBlocker>
-        <EditorForm
-          docKey="shoots"
-          initial={shoots}
-          title="Photo sets"
-          lead="In the order /photoshoot shows them. Open a set to add, describe and arrange its photographs."
-        >
-          {(form) => <ShootFields form={form} links={links} />}
-        </EditorForm>
-      </SaveBlocker>
+      <EditorForm
+        docKey="shoots"
+        initial={shoots}
+        title="Photo sets"
+        lead="In the order /photoshoot shows them. Open a set to add, describe and arrange its photographs."
+        saveBlockedReason={blockedReason}
+      >
+        {(form) => <ShootFields form={form} links={links} />}
+      </EditorForm>
     </div>
   );
+}
+
+const photosIn = (doc: Shoots, key: string) => doc.gallery[key]?.photos ?? [];
+
+/** The photographs without a description, in the order the page shows them. */
+function undescribed(doc: Shoots) {
+  return doc.order.flatMap((key) =>
+    photosIn(doc, key).flatMap((p, i) =>
+      p.alt.trim() ? [] : [{ key: `${key}:${i}`, label: `${doc.gallery[key]?.label || key}, photo ${i + 1}`, thumb: p.src }],
+    ),
+  );
+}
+
+/** Why the sets can't be saved as they stand, or null. */
+function blockedReason(doc: Shoots) {
+  const missing = undescribed(doc).length;
+  const empty = doc.order.find((key) => photosIn(doc, key).length === 0);
+  return missing
+    ? `describe ${missing === 1 ? "1 photo" : `${missing} photos`} (listed at the top).`
+    : empty !== undefined
+      ? `“${doc.gallery[empty]?.label || empty}” has no photographs. Add some, or remove the set.`
+      : doc.order.some((key) => !doc.gallery[key]?.label.trim())
+        ? "every set needs a name."
+        : null;
 }
 
 function ShootFields({ form, links }: { form: EditorFormApi<Shoots>; links: Record<string, { slug: string; title: string }[]> }) {
@@ -99,25 +121,11 @@ function ShootFields({ form, links }: { form: EditorFormApi<Shoots>; links: Reco
   const [newLabel, setNewLabel] = useState("");
 
   const altId = (key: string, i: number) => `${idBase}-${key}-${i}`;
-  const photosOf = (key: string) => doc.gallery[key]?.photos ?? [];
+  const photosOf = (key: string) => photosIn(doc, key);
   const setPhotos = (key: string, photos: Shoots["gallery"][string]["photos"]) => form.set(["gallery", key, "photos"], photos);
 
-  const missing = doc.order.flatMap((key) =>
-    photosOf(key).flatMap((p, i) =>
-      p.alt.trim() ? [] : [{ key: `${key}:${i}`, label: `${doc.gallery[key]?.label || key}, photo ${i + 1}`, thumb: p.src }],
-    ),
-  );
-  const empty = doc.order.filter((key) => photosOf(key).length === 0);
-  const unnamed = doc.order.filter((key) => !doc.gallery[key]?.label.trim());
+  const missing = undescribed(doc);
   const total = doc.order.reduce((n, key) => n + photosOf(key).length, 0);
-
-  const reason = missing.length
-    ? `describe ${missing.length === 1 ? "1 photo" : `${missing.length} photos`} (listed at the top).`
-    : empty.length
-      ? `“${doc.gallery[empty[0]]?.label || empty[0]}” has no photographs. Add some, or remove the set.`
-      : unnamed.length
-        ? "every set needs a name."
-        : null;
 
   const jump = (target: string) => {
     const [key, i] = target.split(":");
@@ -308,8 +316,6 @@ function ShootFields({ form, links }: { form: EditorFormApi<Shoots>; links: Reco
           </Button>
         </div>
       </div>
-
-      {reason ? <BlockSave reason={reason} /> : null}
 
       {pickingFor ? (
         <MultiMediaPicker
