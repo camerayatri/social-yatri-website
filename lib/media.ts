@@ -44,6 +44,31 @@ export function media(path: string): string {
   return `${BASE}${path}`;
 }
 
+/**
+ * The store's origin, for the connection hints, or null when media is served
+ * from the deployment itself and there is no second origin to warm.
+ */
+export const MEDIA_ORIGIN: string | null = BASE ? new URL(BASE).origin : null;
+
+/**
+ * The silent hover preview of a reel, or null when it has none.
+ *
+ * A card that plays on hover plays muted until a sound switch is on, and for
+ * that the full file is the wrong thing to fetch: an audio track nobody
+ * hears, 720px for a card drawn about 260px wide, and the rest of the clip
+ * buffering for as long as the pointer stays. `scripts/make-previews.mjs`
+ * cuts each seeded reel's first seven seconds at 540px with no audio and
+ * puts it beside the reels, so `video/reels/x.mp4` has its preview at
+ * `video/previews/x.mp4`. Found by name rather than stored, so the content
+ * schema does not change: a reel the admin uploads lives elsewhere in the
+ * store, matches nothing here, and plays its full file as before. Only on the
+ * store, because the previews were never in /public.
+ */
+export function previewSrc(src: string): string | null {
+  if (!BASE || !src.startsWith(`${BASE}/video/reels/`) || !src.endsWith(".mp4")) return null;
+  return `${BASE}/video/previews/${src.slice(`${BASE}/video/reels/`.length)}`;
+}
+
 /** The store path of a media URL ("img/covers/home-04.jpg"), as the placeholder table keys it. */
 function storePath(src: string): string {
   const rest = BASE && src.startsWith(`${BASE}/`) ? src.slice(BASE.length) : src;

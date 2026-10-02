@@ -3,11 +3,21 @@
 import { useCallback, useEffect, useRef, useState, useSyncExternalStore, type RefObject } from "react";
 import { useGSAP } from "@gsap/react";
 
+import { getImageProps } from "next/image";
+
 import type { ShowreelClip } from "@/lib/reels";
 import { gsap } from "@/lib/gsap";
-import { posterSrc } from "@/lib/media";
+import { pauseClip, playClip, useClip, warmClips } from "@/lib/clip";
 import { useMediaViewer, type ViewerItem } from "@/components/effects/media-viewer";
-import { claimPlayback } from "@/lib/solo-video";
+import Buffering from "@/components/work/buffering";
+import Veil from "@/components/work/veil";
+
+/**
+ * How wide a card is drawn, for the cover's srcset: the card's own width
+ * rule (`w-[min(19.5vw,300px)]`, 29vw below the tablet breakpoint, 40vw on a
+ * phone) written out for the browser.
+ */
+const CARD_SIZES = "(max-width: 767px) 40vw, (max-width: 991px) 29vw, min(19.5vw, 300px)";
 
 /**
  * The spiral.
@@ -222,7 +232,9 @@ export default function SpiralGallery({
   );
 
   return (
-    <div ref={root} className="relative h-dvh w-full overflow-hidden">
+    // The pointer arriving on the spiral opens the connection to the media
+    // store, ahead of the hover that will want a clip from it.
+    <div ref={root} onPointerEnter={warmClips} className="relative h-dvh w-full overflow-hidden">
       <div
         className="absolute inset-0"
         style={{ perspective: "1400px", perspectiveOrigin: "50% 50%" }}
@@ -288,18 +300,35 @@ function ShowreelCard({
   const [playing, setPlaying] = useState(false);
 
   /*
-   * The cover and the video's poster are one file. The poster is handed the
-   * cover's URL once the cover has loaded, so the browser already has it;
-   * set on the element rather than rendered, because a `poster` in the markup
-   * is fetched the moment the video exists, lazy cover or not. The effect
-   * catches a cover that finished before hydration, whose load event fired
-   * with nobody listening.
+   * The clip's file is attached on the first hover and let go when the card
+   * leaves the screen (`lib/clip.ts`): the silent preview while the hero's
+   * switch is off, the full file once it is on.
    */
-  const cover = posterSrc(clip.poster);
+  const stalled = useClip(video, clip.src);
+
+  /*
+   * The cover and the video's poster are one file. The cover carries a
+   * srcset, so a 280px card on a desktop is sent a 384px frame rather than
+   * the 750 a phone's 3x screen needs, and whichever file the browser chose
+   * (`currentSrc`) is handed to the video as its poster once it has loaded,
+   * so the two never fetch different files. Set on the element rather than
+   * rendered, because a `poster` in the markup is fetched the moment the
+   * video exists, lazy cover or not. The effect catches a cover that
+   * finished before hydration, whose load event fired with nobody listening.
+   */
+  const { props: cover } = getImageProps({
+    src: clip.poster,
+    alt: "",
+    width: clip.w,
+    height: clip.h,
+    sizes: CARD_SIZES,
+    quality: 75,
+  });
   const coverRef = useRef<HTMLImageElement>(null);
   const lendPoster = useCallback(() => {
-    if (video.current) video.current.poster = cover;
-  }, [cover]);
+    const img = coverRef.current;
+    if (video.current && img?.currentSrc) video.current.poster = img.currentSrc;
+  }, []);
   useEffect(() => {
     if (coverRef.current?.complete && coverRef.current.naturalWidth) lendPoster();
   }, [lendPoster]);
@@ -315,50 +344,27 @@ function ShowreelCard({
   );
 
   useEffect(() => {
-    if (reduced) video.current?.pause();
+    if (reduced && video.current) pauseClip(video.current);
   }, [reduced]);
 
   /*
-   * Plays with the sound the switch asks for and falls back to muted. A
-   * browser only permits unmuted playback once the page has had a real user
-   * gesture, and a hover is not one, so before the first click this plays
-   * silently rather than not at all.
+   * Plays with the sound the switch asks for, which is off until the reader
+   * turns it on, and falls back to muted when the browser refuses sound: a
+   * hover is not a gesture, so before the first click it will.
    */
-  const play = async () => {
-    const el = video.current;
-    if (!el) return;
-    claimPlayback(el);
-    el.muted = soundRef ? !soundRef.current : false;
-    try {
-      await el.play();
-    } catch (err) {
-      // Only the autoplay refusal earns a muted retry. Any other rejection,
-      // chiefly the pointer leaving before the file had a frame, which aborts
-      // the pending play, is left alone: retrying it would start the clip on a
-      // card nobody is over.
-      if (!(err instanceof DOMException && err.name === "NotAllowedError")) return;
-      el.muted = true;
-      try {
-        await el.play();
-      } catch {
-        /* leave the cover showing */
-      }
-    }
-  };
-
   const start = () => {
-    if (reduced) return;
+    if (reduced || !video.current) return;
     onWatch(true);
-    void play();
+    void playClip(video.current, soundRef?.current ?? false);
   };
   const stop = () => {
     onWatch(false);
-    video.current?.pause();
+    if (video.current) pauseClip(video.current);
   };
   const open = () => {
     // The card's own copy stops before the viewer's starts, or the same clip
     // plays twice, one of them behind the scrim.
-    video.current?.pause();
+    if (video.current) pauseClip(video.current);
     onOpen();
   };
 
@@ -367,9 +373,19 @@ function ShowreelCard({
       type="button"
       data-spiral-card
       onClick={open}
-      onMouseEnter={start}
-      onMouseLeave={stop}
-      onFocus={start}
+      // A mouse or a pen. A tap is the click that opens the viewer, and
+      // starting the card under the finger first would fetch the clip twice.
+      onPointerEnter={(event) => {
+        if (event.pointerType !== "touch") start();
+      }}
+      onPointerLeave={(event) => {
+        if (event.pointerType !== "touch") stop();
+      }}
+      onPointerDown={warmClips}
+      // The keyboard's hover; a tap's focus is not visible and does not count.
+      onFocus={(event) => {
+        if (event.currentTarget.matches(":focus-visible")) start();
+      }}
       onBlur={stop}
       aria-label={`${clip.title}. Open full screen: ${clip.alt}`}
       /*
@@ -402,9 +418,7 @@ function ShowreelCard({
           onPlaying={() => setPlaying(true)}
           onPause={() => setPlaying(false)}
           className="h-full w-full object-cover"
-        >
-          <source src={clip.src} type="video/mp4" />
-        </video>
+        />
 
         {/*
          * The client's designed cover, laid over the footage rather than left
@@ -414,24 +428,25 @@ function ShowreelCard({
          * eight designed covers. This one fades once the footage is painting
          * and returns when the clip pauses.
          *
-         * Through the optimizer, as one fixed file rather than a srcset: the
-         * 720 frame at quality 75, which covers a 300px card at 2x and a
-         * phone's 40vw card at 3x, and comes back as AVIF at roughly half the
-         * JPEG. One URL because the video's poster is the same picture, and a
-         * srcset would let the two pick different files and fetch both. The
-         * poster is only pointed at it once it is here (see the effect
-         * above), so it is a cache hit, never a second request, and never
-         * the thing that pulls a lazy card's cover in early.
+         * Through the optimizer at quality 75, as AVIF where the browser takes
+         * it, with a srcset sized to the card: a 280px card on a 1x desktop
+         * takes the 384 frame (about a third of the 750 it used to be sent),
+         * a phone's 40vw card at 3x the 640. The video's poster is pointed at
+         * whichever file the browser chose, only once it is here (see the
+         * effect above), so it is a cache hit, never a second request, and
+         * never the thing that pulls a lazy card's cover in early.
          *
          * Only the front card loads at once, at high priority, with the next
          * one in line behind it; the rest wait for the browser's lazy loading.
          * All nine used to be fetched eagerly while the opening film, which is
          * the only thing on screen at that point, was still loading.
          */}
-        {/* eslint-disable-next-line @next/next/no-img-element -- the src is already the optimizer's URL, from getImageProps; next/image would wrap it again. */}
+        {/* eslint-disable-next-line @next/next/no-img-element -- the props are next/image's own, from getImageProps; a plain img keeps the ref and the load handler this needs. */}
         <img
           ref={coverRef}
-          src={cover}
+          src={cover.src}
+          srcSet={cover.srcSet}
+          sizes={cover.sizes}
           alt=""
           width={clip.w}
           height={clip.h}
@@ -443,6 +458,8 @@ function ShowreelCard({
           aria-hidden
           className={`pointer-events-none absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${playing ? "opacity-0" : "opacity-100"}`}
         />
+        <Veil key={clip.poster} src={clip.poster} />
+        <Buffering show={stalled} />
       </span>
 
       {/* No furniture on the card: the footage is the card. The name and the

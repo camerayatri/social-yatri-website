@@ -5,6 +5,7 @@ import { useGSAP } from "@gsap/react";
 
 import type { ContentDocs } from "@/lib/cms/schema";
 import { gsap } from "@/lib/gsap";
+import { setClipSound } from "@/lib/clip";
 import { useLoaded } from "@/components/loader";
 import ProgressiveBlur from "@/components/effects/progressive-blur";
 import SpiralGallery from "@/components/effects/spiral-gallery";
@@ -49,9 +50,11 @@ export default function Hero({
     const on = !soundRef.current;
     soundRef.current = on;
     setSound(on);
-    root.current?.querySelectorAll<HTMLVideoElement>("[data-spiral-card] video").forEach((v) => {
-      v.muted = !on;
-    });
+    // A card playing its silent preview moves to the full file, with sound,
+    // at the moment it had reached (`lib/clip.ts`).
+    root.current
+      ?.querySelectorAll<HTMLVideoElement>("[data-spiral-card] video")
+      .forEach((v) => setClipSound(v, on));
   }, []);
 
   useGSAP(
